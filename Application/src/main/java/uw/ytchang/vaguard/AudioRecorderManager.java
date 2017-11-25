@@ -29,6 +29,7 @@ public class AudioRecorderManager {
     private int mBufferSize;
 
     private boolean hasVoice;
+    private boolean fileClosed;
 
 
     private static  String mOutputFileName;
@@ -95,12 +96,13 @@ public class AudioRecorderManager {
             if(outputFile.exists()){
                 outputFile.delete();
             }
-            FileOutputStream bufferedOutputStream = new FileOutputStream (outputFile);
 
+            fileClosed = false;
+            FileOutputStream fileOutputStream = new FileOutputStream (outputFile);
             while (mIsRecording){
                 int bytesRead = mAudioRecord.read(sData, 0, mBufferSize);
                 if (bytesRead > 0) {
-                    bufferedOutputStream.write(sData, 0, bytesRead);
+                    fileOutputStream.write(sData, 0, bytesRead);
                     System.out.println("bytesRead:" +bytesRead);
                     System.out.println("mBufferSize: "+mBufferSize);
                     if(bytesRead != mBufferSize){
@@ -111,7 +113,8 @@ public class AudioRecorderManager {
                 }
             }
 
-            bufferedOutputStream.close();
+            fileOutputStream.close();
+            fileClosed = true;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -119,5 +122,9 @@ public class AudioRecorderManager {
 
     public boolean isHasVoice() {
         return hasVoice;
+    }
+
+    public boolean isFileClosed() {
+        return fileClosed;
     }
 }

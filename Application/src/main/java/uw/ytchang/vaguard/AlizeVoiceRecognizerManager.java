@@ -7,6 +7,9 @@ package uw.ytchang.vaguard;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -21,7 +24,7 @@ public class AlizeVoiceRecognizerManager {
         try {
             InputStream configAsset = context.getAssets().open("alize.cfg");
 
-            SimpleSpkDetSystem alizeSystem = new SimpleSpkDetSystem(configAsset, context.getFilesDir().getPath());
+            alizeSystem = new SimpleSpkDetSystem(configAsset, context.getFilesDir().getPath());
             configAsset.close();
 
             InputStream backgroundModelAsset = context.getAssets().open("gmm/world.gmm");
@@ -35,7 +38,7 @@ public class AlizeVoiceRecognizerManager {
 
             //Train a speaker model
             // Record audio in the format specified in the configuration file and return it as an array of bytes
-            AssetFileDescriptor ytAudio = context.getAssets().openFd("yt2.WAV");
+            AssetFileDescriptor ytAudio = context.getAssets().openFd("yt.WAV");
 
 
             /////// Translating from AssetDescriptor to Byte array
@@ -71,26 +74,6 @@ public class AlizeVoiceRecognizerManager {
             // Reset input before sending another signal
             alizeSystem.resetAudio();
             alizeSystem.resetFeatures();
-
-            ytAudio = context.getAssets().openFd("test.wav");
-
-            /////// Translating from AssetDescriptor to Byte array
-            byte[] moreAudio = new byte[(int) ytAudio.getLength()];
-            ytAudio.createInputStream().read(moreAudio);
-            alizeSystem.addAudio(moreAudio);
-
-            // Perform speaker verification against the model we created earlier
-            SimpleSpkDetSystem.SpkRecResult verificationResult = alizeSystem.verifySpeaker("spk01");
-            System.out.println("Is spk01: " + verificationResult.match);
-            System.out.println("Is spk01: " + verificationResult.score);
-
-            verificationResult = alizeSystem.verifySpeaker("yt");
-            System.out.println("Is yt: " + verificationResult.match);
-            System.out.println("Is yt: " + verificationResult.score);
-
-            SimpleSpkDetSystem.SpkRecResult identificationResult = alizeSystem.identifySpeaker();
-            System.out.println("Who is speaking: " + identificationResult.speakerId);
-
         } catch (IOException e) {
             e.printStackTrace();
             return;
@@ -98,6 +81,30 @@ public class AlizeVoiceRecognizerManager {
             e.printStackTrace();
 //                return;
         }
+    }
+
+    public String identifySpeaker(String audioFilePath){
+
+        try {
+            alizeSystem.resetAudio();
+            alizeSystem.resetFeatures();
+
+            File testFile = new File(audioFilePath);
+            FileInputStream testInputstream = new FileInputStream(audioFilePath);
+            /////// Translating from AssetDescriptor to Byte array
+            byte[] moreAudio = new byte[(int) testFile.length()];
+            testInputstream.read(moreAudio);
+            alizeSystem.addAudio(moreAudio);
+
+            return alizeSystem.identifySpeaker().speakerId;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (AlizeException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

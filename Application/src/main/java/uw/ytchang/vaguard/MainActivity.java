@@ -1,30 +1,43 @@
 package uw.ytchang.vaguard;
 
 import android.app.Activity;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Random;
+
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
     private final String TAG = "MainActivity";
 
-    private enum State {TRIGGER, COMMAND, CHALLENGE, EXIT}
-
-    ;
+    private enum State {TRIGGER, COMMAND, CHALLENGE, EXIT};
 
     private TextView guide_line, result_tv;
     private Button vaguard_listen_btn, add_user_btn;
     private AndroidSpeechRecognizerManager androidSpeechRecognizerManager;
-    private String recordVoicePath;
+    private String recordVoicePath, speaker;
     private static AudioRecorderManager audioRecorderManager;
     private final int RECORD_TIME =  5*1000;
+
+    private TextToSpeech ttobj;
+
+    private MediaPlayer mMediaPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,18 +104,22 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
             case COMMAND:
                 Log.d(TAG, "COMMAND state");
+                result_tv.setText("");
                 guide_line.setText("Say \"Transfer money to Yuntai\"");
                 recordVoice();
                 break;
             case CHALLENGE:
                 Log.d(TAG, "CHALLENGE state");
                 int challenge = getRandomNumber();
-                guide_line.setText("Say " + String.valueOf(challenge));
+                String challengStr = String.valueOf(challenge);
+//                result_tv.setText("");
+                guide_line.setText("Hi "+ speaker + ", Say " + challengStr);
+                checkChallenge(challengStr);
                 break;
             case EXIT:
                 Log.d(TAG, "EXIT state");
                 guide_line.setText(getString(R.string.vaguard_interrupt));
-                result_tv.setText("");
+                result_tv.setText("Wait...");
                 break;
         }
     }
@@ -170,8 +187,101 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private void voiceRecognition() {
         // record the audio
 
+        while(true){
+            Log.d(TAG, "file is closed: "+ audioRecorderManager.isFileClosed() );
+            if(audioRecorderManager.isFileClosed()){
+                AlizeVoiceRecognizerManager alizeVoiceRecognizerManager = new AlizeVoiceRecognizerManager(getBaseContext());
+                if((speaker = alizeVoiceRecognizerManager.identifySpeaker(recordVoicePath)) != null) {
+                    runProgress(State.CHALLENGE);
+                }else{
+                    speaker = null;
+                }
 
-        new AlizeVoiceRecognizerManager(getBaseContext());
-        runProgress(State.CHALLENGE);
+                break;
+            }
+        }
     }
+
+    private void checkChallenge(String challengStr){
+        speakOutChallenge(challengStr);
+
+    }
+
+    private Handler handler;
+    private void speakOutChallenge(final String challenge){
+        final String UTTERID_SPEAKING = "speaking";
+        final String UTTERID_FINISH = "finishSpeak";
+        ttobj = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status != TextToSpeech.ERROR) {
+                    ttobj.setLanguage(Locale.US);
+//                    ttobj.setSpeechRate(0.8f);
+                    String utterId = "";
+                    for (int i=0; i<challenge.length(); i++){
+                        String s = String.valueOf(challenge.charAt(i));
+
+                        if(i == 0){
+                            utterId = UTTERID_SPEAKING;
+                        } else if(i == challenge.length()-1){
+                            utterId = UTTERID_FINISH;
+                        }
+                        // use TextToSpeech.QUEUE_ADD to make speak char by char
+                        ttobj.speak(s, TextToSpeech.QUEUE_ADD, null, utterId);
+                    }
+                }
+            }
+        });
+
+        ttobj.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+            @Override
+            public void onStart(String utteranceId) {
+                // Speaking started.
+                if(utteranceId.equals(UTTERID_SPEAKING)){
+                    result_tv.setText("Wait...");
+                }
+            }
+
+            @Override
+            public void onDone(String utteranceId) {
+                if(utteranceId.equals(UTTERID_FINISH)){
+                    result_tv.setText("Please respond now");
+                    // TODO: record the response, recognizing the voice and the response content
+                }
+            }
+
+            @Override
+            public void onError(String utteranceId) {
+                Log.d("Errpr in speakOutChallenge", utteranceId);
+            }
+        });
+
+
+    }
+
+//    private void playMusic() {
+//        if (mMediaPlayer == null) {
+//            mMediaPlayer = MediaPlayer.create(this, Uri.parse(recordVoicePath));
+//            mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+//                @Override
+//                public void onCompletion(MediaPlayer mp) {
+//                    // we need to transition to the READY/Home state
+//                    Log.d(TAG, "Music Finished");
+//                    stopMusic();
+//                }
+//            });
+//        }
+//        mMediaPlayer.start();
+//    }
+//
+//    /**
+//     * Stops the playback of the MP3 file.
+//     */
+//    private void stopMusic() {
+//        if (mMediaPlayer != null) {
+//            mMediaPlayer.stop();
+//            mMediaPlayer.release();
+//            mMediaPlayer = null;
+//        }
+//    }
 }
