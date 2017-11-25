@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">VAGuard</string>
+    <string name="vaguard_start">Start</string>
+    <string name="vaguard_stop">Stop</string>
+    <string name="add_user">Add User</string>
+    <string name="press_button">Press button to Start</string>
+    <string name="you_may_speak">Say \"Ok google\"</string>
+    <string name="vaguard_interrupt">process interrupt</string>
+    <string name="record_audio_is_required">We will only use the Record Audio Permission in order to use the Speech to Text Feature</string>
+    <string name="internet_require">We will only use the Internet to access google speech API</string>
+    <string name="no_results_found">No Matching Results</string>
+
+</resources>
