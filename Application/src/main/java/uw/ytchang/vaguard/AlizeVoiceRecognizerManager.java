@@ -6,6 +6,7 @@ package uw.ytchang.vaguard;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,6 +27,7 @@ public class AlizeVoiceRecognizerManager {
 
             alizeSystem = new SimpleSpkDetSystem(configAsset, context.getFilesDir().getPath());
             configAsset.close();
+
 
             InputStream backgroundModelAsset = context.getAssets().open("gmm/world.gmm");
             alizeSystem.loadBackgroundModel(backgroundModelAsset);
@@ -95,6 +97,11 @@ public class AlizeVoiceRecognizerManager {
             byte[] moreAudio = new byte[(int) testFile.length()];
             testInputstream.read(moreAudio);
             alizeSystem.addAudio(moreAudio);
+            Log.d(TAG, "speaker score: "+alizeSystem.identifySpeaker().score);
+            Log.d(TAG, "speaker score of spk01: "+alizeSystem.verifySpeaker("spk01").score);
+            Log.d(TAG, "speaker score of spk01: "+alizeSystem.verifySpeaker("spk01").match);
+            Log.d(TAG, "speaker score of yt: "+alizeSystem.verifySpeaker("yt").score);
+            Log.d(TAG, "speaker score of yt: "+alizeSystem.verifySpeaker("yt").match);
 
             return alizeSystem.identifySpeaker().speakerId;
         } catch (FileNotFoundException e) {

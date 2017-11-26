@@ -31,7 +31,6 @@ public class AudioRecorderManager {
     private boolean hasVoice;
     private boolean fileClosed;
 
-
     private static  String mOutputFileName;
 
     public AudioRecorderManager(Context context){
@@ -127,4 +126,5 @@ public class AudioRecorderManager {
     public boolean isFileClosed() {
         return fileClosed;
     }
+
 }
