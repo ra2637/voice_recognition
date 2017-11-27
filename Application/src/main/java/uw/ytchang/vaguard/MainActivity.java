@@ -38,8 +38,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private TextToSpeech ttobj;
 
-    private MediaPlayer mMediaPlayer;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -129,7 +127,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             @Override
             public void onResults(ArrayList<String> results) {
                 if (results != null && results.size() > 0) {
-                    if (results.contains("okay Google")) {
+                    if (results.contains("okay Google") || results.contains("OK Google")) {
                         result_tv.setText("Ok Google");
                         runProgress(State.COMMAND);
                     } else {
@@ -205,7 +203,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     private Handler handler;
-    private void checkChallenge(final String challenge, State state){
+    private void checkChallenge(final String challenge, final State state){
         final String UTTERID_SPEAKING = "speaking";
         final String UTTERID_FINISH = "finishSpeak";
         ttobj = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
@@ -258,6 +256,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private void checkContent(){
         Log.d(TAG, "checkContent");
+        GoogleSpeechRecognizerManager googleSpeechRecognizerManager = new GoogleSpeechRecognizerManager(getApplicationContext());
+        googleSpeechRecognizerManager.recognizeFile(recordVoicePath);
     }
 
 

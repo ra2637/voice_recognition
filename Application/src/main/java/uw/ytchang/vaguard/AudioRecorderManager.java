@@ -5,7 +5,6 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
-import android.widget.Button;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,15 +17,17 @@ import java.io.IOException;
 public class AudioRecorderManager {
     private static final String TAG = "AudioRecorderManager";
 
-    private static final int RECORDER_SAMPLERATE = 16000;
+    public static final int RECORDER_SAMPLERATE = 16000;
     private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
     private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
+    public static final int RECORDER_AUDIO_BUFFER_SIZE = AudioRecord.getMinBufferSize(RECORDER_SAMPLERATE, AudioFormat
+            .CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT) * 2;
+
 
     private AudioRecord mAudioRecord = null;
     private Thread mRecordingThread = null;
     private boolean mIsRecording = false;
 //    private StreamingRecognizeClient mStreamingClient;
-    private int mBufferSize;
 
     private boolean hasVoice;
     private boolean fileClosed;
@@ -35,14 +36,11 @@ public class AudioRecorderManager {
 
     public AudioRecorderManager(Context context){
 
-        mBufferSize = AudioRecord.getMinBufferSize(RECORDER_SAMPLERATE, AudioFormat
-                .CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT) * 2;
-
         mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
                 RECORDER_SAMPLERATE,
                 RECORDER_CHANNELS,
                 RECORDER_AUDIO_ENCODING,
-                mBufferSize);
+                RECORDER_AUDIO_BUFFER_SIZE);
 
         mOutputFileName = context.getFilesDir().getPath()+"/test.wav";
     }
@@ -88,7 +86,7 @@ public class AudioRecorderManager {
     }
 
     private void readData() {
-        byte sData[] = new  byte[mBufferSize];
+        byte sData[] = new  byte[RECORDER_AUDIO_BUFFER_SIZE];
 
         try {
             File outputFile = new File(mOutputFileName);
@@ -99,12 +97,12 @@ public class AudioRecorderManager {
             fileClosed = false;
             FileOutputStream fileOutputStream = new FileOutputStream (outputFile);
             while (mIsRecording){
-                int bytesRead = mAudioRecord.read(sData, 0, mBufferSize);
+                int bytesRead = mAudioRecord.read(sData, 0, RECORDER_AUDIO_BUFFER_SIZE);
                 if (bytesRead > 0) {
                     fileOutputStream.write(sData, 0, bytesRead);
                     System.out.println("bytesRead:" +bytesRead);
-                    System.out.println("mBufferSize: "+mBufferSize);
-                    if(bytesRead != mBufferSize){
+                    System.out.println("RECORDER_AUDIO_BUFFER_SIZE: "+ RECORDER_AUDIO_BUFFER_SIZE);
+                    if(bytesRead != RECORDER_AUDIO_BUFFER_SIZE){
                         hasVoice = true;
                     }
                 } else{

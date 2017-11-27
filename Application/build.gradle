@@ -17,6 +17,9 @@ android {
         applicationId "uw.ytchang.vaguard"
         minSdkVersion 26
         targetSdkVersion 26
+
+        // Enabling multidex support.
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -121,7 +124,8 @@ dependencies {
         exclude module: 'httpclient'
     }
     // secure request so that sslv3 won't be used
-    compile 'info.guardianproject.netcipher:netcipher:1.2'
+//    compile 'info.guardianproject.netcipher:netcipher:1.2'
+    compile 'com.google.android.gms:play-services:9.4.0'
 
     testCompile 'org.mockito:mockito-core:2.2.28'
 }

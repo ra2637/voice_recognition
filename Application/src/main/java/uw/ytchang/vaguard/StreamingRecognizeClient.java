@@ -80,7 +80,7 @@ public class StreamingRecognizeClient implements StreamObserver<StreamingRecogni
 
     @Override
     public void onNext(StreamingRecognizeResponse response) {
-        Log.i(getClass().getSimpleName(), "Received response: " +
+        Log.d(getClass().getSimpleName(), "Received response: " +
                 TextFormat.printToString(response));
     }
 

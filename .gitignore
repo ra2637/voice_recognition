@@ -2,3 +2,4 @@
 Application/build
 .gradle/
 .idea/
+Application/src/main/assets/credentials.json
