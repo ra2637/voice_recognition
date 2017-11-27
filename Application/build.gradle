@@ -1,31 +1,5 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.1'
-    }
-}
-
 apply plugin: 'com.android.application'
-
-repositories {
-    jcenter()
-    google()
-}
-
-
-dependencies {
-//    compile 'com.android.support:support-v4:26.0.2'
-//    compile 'com.android.support:support-v13:26.0.2'
-//    compile 'com.android.support:cardview-v7:26.0.2'
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    testImplementation 'junit:junit:4.12'
-    implementation project(':alize')
-}
+apply plugin: 'com.google.protobuf'
 
 // The sample build uses multiple directories to
 // keep boilerplate and common code separate from
@@ -49,37 +23,105 @@ android {
         customDebugType {
             debuggable true
         }
-    }
-
-    sourceSets {
-        main {
-            dirs.each { dir ->
-                java.srcDirs "src/${dir}/java"
-                res.srcDirs "src/${dir}/res"
-            }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-        androidTest.setRoot('tests')
-        androidTest.java.srcDirs = ['tests/src']
-
     }
 
-    compileOptions {
-        targetCompatibility 1.8
-        sourceCompatibility 1.8
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/INDEX.LIST'
+        exclude 'META-INF/io.netty.versions.properties'
+        exclude 'META-INF/io.grpc.ManagedChannelProvider'
+        exclude 'META-INF/services/io.grpc.ManagedChannelProvider'
+        pickFirst 'META-INF/license.txt'
+    }
+
+//    sourceSets {
+//        main {
+//            dirs.each { dir ->
+//                java.srcDirs "src/${dir}/java"
+//                res.srcDirs "src/${dir}/res"
+//            }
+//        }
+//        androidTest.setRoot('tests')
+//        androidTest.java.srcDirs = ['tests/src']
+//
+//    }
+
+//    compileOptions {
+//        targetCompatibility 1.8
+//        sourceCompatibility 1.8
+//    }
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.0.0'
+    }
+    plugins {
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.0.0'
+        }
+        javalite {
+            artifact = 'com.google.protobuf:protoc-gen-javalite:3.0.0'
+        }
+    }
+    generateProtoTasks {
+        all().each {
+            task ->
+                task.builtins {
+                    remove javanano
+                    java {
+                    }
+                }
+                task.plugins {
+                    grpc {
+                    }
+                }
+        }
     }
 }
 
+def grpcVersion = '1.0.0'
 
+dependencies {
+//    compile 'com.android.support:support-v4:26.0.2'
+//    compile 'com.android.support:support-v13:26.0.2'
+//    compile 'com.android.support:cardview-v7:26.0.2'
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    testImplementation 'junit:junit:4.12'
 
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    implementation project(':alize')
 
+    // gRPC
+    compile 'javax.annotation:javax.annotation-api:1.2'
+    compile("io.grpc:grpc-protobuf:${grpcVersion}") {
+        exclude module: 'jsr305'
+    }
+    compile("io.grpc:grpc-stub:${grpcVersion}") {
+        exclude module: 'jsr305'
+    }
+    compile("io.grpc:grpc-auth:${grpcVersion}") {
+        exclude module: 'jsr305'
+    }
+    compile("io.grpc:grpc-okhttp:${grpcVersion}") {
+        exclude module: 'jsr305'
+    }
+    // OAuth2 for Google API
+    compile('com.google.auth:google-auth-library-oauth2-http:0.3.0') {
+        exclude module: 'jsr305'
+        exclude module: 'httpclient'
+    }
+    // secure request so that sslv3 won't be used
+    compile 'info.guardianproject.netcipher:netcipher:1.2'
 
-
-
-
-
-
-
-
-
-
-
+    testCompile 'org.mockito:mockito-core:2.2.28'
+}
