@@ -1,33 +1,26 @@
 package uw.ytchang.vaguard;
 
 import android.app.Activity;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
-import java.util.function.Function;
 
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
     private final String TAG = "MainActivity";
 
-    private enum State {TRIGGER, COMMAND, CHALLENGE, EXIT};
+    private enum State {TRIGGER, COMMAND, CHALLENGE, STOP, FINISH, REJECT};
 
     private TextView guide_line, result_tv;
     private Button vaguard_listen_btn, add_user_btn;
@@ -37,6 +30,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private final int RECORD_TIME =  5*1000;
 
     private TextToSpeech ttobj;
+    private String challenge;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +71,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         vaguard_listen_btn.setText(getString(R.string.vaguard_stop));
                     } else {
                         // Ready to stop
-                        runProgress(State.EXIT);
+                        runProgress(State.STOP);
                         if (androidSpeechRecognizerManager != null) {
                             androidSpeechRecognizerManager.destroy();
                             androidSpeechRecognizerManager = null;
@@ -109,15 +103,27 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
             case CHALLENGE:
                 Log.d(TAG, "CHALLENGE state");
-                int challenge = getRandomNumber();
-                String challengStr = String.valueOf(challenge);
+                int challengeInt = getRandomNumber();
+                String challeng = String.valueOf(challengeInt);
                 guide_line.setText("Hi "+ speaker);
-                checkChallenge(challengStr, State.CHALLENGE);
+                checkChallenge(challeng, State.CHALLENGE);
                 break;
-            case EXIT:
-                Log.d(TAG, "EXIT state");
+            case STOP:
+                Log.d(TAG, "STOP state");
                 guide_line.setText("");
                 result_tv.setText("Process stopped");
+                break;
+            case FINISH:
+                Log.d(TAG, "FINISH state");
+                vaguard_listen_btn.setText(getString(R.string.vaguard_start));
+                guide_line.setText("Succeeded Authentication!");
+                result_tv.setText("Transfer money...");
+                break;
+            case REJECT:
+                Log.d(TAG, "REJECT state");
+                vaguard_listen_btn.setText(getString(R.string.vaguard_start));
+                guide_line.setText("Failed Authenticate!");
+                result_tv.setText("Command rejected\n");
                 break;
         }
     }
@@ -184,6 +190,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private void voiceRecognition(State state) {
         // record the audio
+        audioRecorderManager.stopRecording();
         while(true){
             Log.d(TAG, "file is closed: "+ audioRecorderManager.isFileClosed() );
             if(audioRecorderManager.isFileClosed()){
@@ -249,7 +256,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             @Override
             public void onError(String utteranceId) {
-                Log.d("Errpr in speakOutChallenge", utteranceId);
+                Log.d("Error in speakOutChallenge", utteranceId);
             }
         });
     }
@@ -257,7 +264,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private void checkContent(){
         Log.d(TAG, "checkContent");
         GoogleSpeechRecognizerManager googleSpeechRecognizerManager = new GoogleSpeechRecognizerManager(getApplicationContext());
-        googleSpeechRecognizerManager.recognizeFile(recordVoicePath);
+        if(googleSpeechRecognizerManager.recognizeFile(recordVoicePath, challenge)){
+            runProgress(State.FINISH);
+        }else{
+            runProgress(State.REJECT);
+        }
     }
 
 
