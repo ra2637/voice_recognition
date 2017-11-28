@@ -1,6 +1,7 @@
 package uw.ytchang.vaguard;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
@@ -8,6 +9,7 @@ import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -20,17 +22,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private final String TAG = "MainActivity";
 
+
     private enum State {TRIGGER, COMMAND, CHALLENGE, STOP, FINISH, REJECT};
 
     private TextView guide_line, result_tv;
     private Button vaguard_listen_btn, add_user_btn;
     private AndroidSpeechRecognizerManager androidSpeechRecognizerManager;
-    private String recordVoicePath, speaker;
+    private AlizeVoiceRecognizerManager alizeVoiceRecognizerManager;
     private static AudioRecorderManager audioRecorderManager;
+    private String recordVoicePath, speaker;
     private final int RECORD_TIME =  5*1000;
 
     private TextToSpeech ttobj;
-//    private String challenge;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,10 +41,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_main);
         findViews();
         setClickListeners();
+
+        alizeVoiceRecognizerManager = new AlizeVoiceRecognizerManager(getBaseContext());
+
     }
 
     private void findViews() {
-        guide_line = (TextView) findViewById(R.id.guide_line);
+        guide_line = (TextView) findViewById(R.id.add_user_guide_line);
         guide_line.setText(getString(R.string.press_button));
         result_tv = (TextView) findViewById(R.id.result_tv);
         vaguard_listen_btn = (Button) findViewById(R.id.vaguard_listen_btn);
@@ -81,6 +87,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     break;
                 case R.id.add_user_btn:
                     // TODO: do something to train user voice for alize
+                    Intent intent = new Intent();
+                    intent.setAction("uw.ytchang.Add_USER_INTENT");
+                    startActivity(intent);
                     break;
             }
         } else {
@@ -160,7 +169,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private void recordVoice(State state, String challenge){
         recordVoicePath = getBaseContext().getFilesDir().getPath()+"/test.wav";
         if(audioRecorderManager == null){
-            audioRecorderManager = new AudioRecorderManager(getBaseContext());
+            audioRecorderManager = new AudioRecorderManager(recordVoicePath);
         }
         audioRecorderManager.startRecording();
         setRestartVoiceRecorder(RECORD_TIME, state, challenge);
@@ -194,7 +203,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         while(true){
             Log.d(TAG, "file is closed: "+ audioRecorderManager.isFileClosed() );
             if(audioRecorderManager.isFileClosed()){
-                AlizeVoiceRecognizerManager alizeVoiceRecognizerManager = new AlizeVoiceRecognizerManager(getBaseContext());
+
                 if((speaker = alizeVoiceRecognizerManager.identifySpeaker(recordVoicePath)) != null) {
                     if(state.equals(State.COMMAND)){
                         runProgress(State.CHALLENGE);

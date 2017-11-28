@@ -10,4 +10,8 @@
     <string name="internet_require">We will only use the Internet to access google speech API</string>
     <string name="no_results_found">No Matching Results</string>
 
+
+    <!--AddUserActivity -->
+    <string name="start_recording">Start Recording</string>
+    <string name="stop_recording">Stop Recording</string>
 </resources>

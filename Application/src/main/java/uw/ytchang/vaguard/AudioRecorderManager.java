@@ -32,9 +32,9 @@ public class AudioRecorderManager {
     private boolean hasVoice;
     private boolean fileClosed;
 
-    private static  String mOutputFileName;
+    private String mOutputFileName;
 
-    public AudioRecorderManager(Context context){
+    public AudioRecorderManager(String outputFilePath){
 
         mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
                 RECORDER_SAMPLERATE,
@@ -42,15 +42,15 @@ public class AudioRecorderManager {
                 RECORDER_AUDIO_ENCODING,
                 RECORDER_AUDIO_BUFFER_SIZE);
 
-        mOutputFileName = context.getFilesDir().getPath()+"/test.wav";
+        mOutputFileName = outputFilePath;
     }
 
-    public static String getOutputFileName() {
+    public String getOutputFileName() {
         return mOutputFileName;
     }
 
-    public static void setOutputFileName(String mOutputFileName) {
-        AudioRecorderManager.mOutputFileName = mOutputFileName;
+    public void setOutputFileName(String mOutputFileName) {
+        this.mOutputFileName = mOutputFileName;
     }
 
 
