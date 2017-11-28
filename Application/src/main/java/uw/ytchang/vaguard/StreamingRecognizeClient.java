@@ -1,6 +1,7 @@
 package uw.ytchang.vaguard;
 
 import android.util.Log;
+import android.widget.TextView;
 
 import com.google.auth.oauth2.GoogleCredentials;
 
@@ -9,6 +10,7 @@ import com.google.cloud.speech.v1beta1.SpeechGrpc;
 import com.google.cloud.speech.v1beta1.StreamingRecognitionConfig;
 import com.google.cloud.speech.v1beta1.StreamingRecognizeRequest;
 import com.google.cloud.speech.v1beta1.StreamingRecognizeResponse;
+import com.google.cloud.speech.v1beta1.SyncRecognizeRequest;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.TextFormat;
 
@@ -18,6 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
@@ -41,6 +45,10 @@ public class StreamingRecognizeClient implements StreamObserver<StreamingRecogni
 
     private static final List<String> OAUTH2_SCOPES =
             Arrays.asList("https://www.googleapis.com/auth/cloud-platform");
+
+    private StreamingRecognizeResponse streamingRecognizeResponse;
+
+    private ReadWriteLock lock = new ReentrantReadWriteLock();
 
     /**
      * Construct client connecting to Cloud Speech server at {@code host:port}.
@@ -80,8 +88,14 @@ public class StreamingRecognizeClient implements StreamObserver<StreamingRecogni
 
     @Override
     public void onNext(StreamingRecognizeResponse response) {
+
         Log.d(getClass().getSimpleName(), "Received response: " +
-                TextFormat.printToString(response));
+                    TextFormat.printToString(response));
+            Log.d(getClass().getSimpleName(), "channel isShutdown: "+mChannel.isShutdown());
+            Log.d(getClass().getSimpleName(), "channel isTerminated: "+mChannel.isTerminated());
+
+        streamingRecognizeResponse = response;
+
     }
 
     @Override
@@ -94,7 +108,7 @@ public class StreamingRecognizeClient implements StreamObserver<StreamingRecogni
 
     @Override
     public void onCompleted() {
-        Log.i(getClass().getSimpleName(), "recognize completed.");
+        Log.d(getClass().getSimpleName(), "recognize completed.");
     }
 
     public void recognizeBytes(byte[] audioBytes, int size) throws IOException,
@@ -103,6 +117,7 @@ public class StreamingRecognizeClient implements StreamObserver<StreamingRecogni
             initializeRecognition();
             mIsInitialized = true;
         }
+
         try {
             StreamingRecognizeRequest request =
                     StreamingRecognizeRequest.newBuilder()
@@ -135,5 +150,9 @@ public class StreamingRecognizeClient implements StreamObserver<StreamingRecogni
 
         credentials.close();
         return channel;
+    }
+
+    public StreamingRecognizeResponse getStreamingRecognizeResponse() {
+        return streamingRecognizeResponse;
     }
 }
