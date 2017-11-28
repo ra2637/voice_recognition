@@ -7,19 +7,16 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.security.ProviderInstaller;
+import com.google.cloud.speech.v1beta1.SpeechRecognitionAlternative;
 import com.google.cloud.speech.v1beta1.StreamingRecognitionResult;
 import com.google.cloud.speech.v1beta1.StreamingRecognizeResponse;
-import com.google.protobuf.TextFormat;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 
 import io.grpc.ManagedChannel;
-
-import static android.provider.Telephony.Carriers.PORT;
 
 /**
  * Created by ra2637 on 11/25/17.
@@ -30,6 +27,7 @@ public class GoogleSpeechRecognizerManager {
     private static final String HOSTNAME = "speech.googleapis.com";
     private static final int PORT = 443;
     private StreamingRecognizeClient mStreamingClient;
+//    private SyncRecognizeClient mSyncClient;
     private ManagedChannel channel;
 
     public GoogleSpeechRecognizerManager(final Context context){
@@ -58,6 +56,7 @@ public class GoogleSpeechRecognizerManager {
             channel = StreamingRecognizeClient.createChannel(
                     HOSTNAME, PORT, credentials);
             mStreamingClient = new StreamingRecognizeClient(channel, AudioRecorderManager.RECORDER_SAMPLERATE);
+//            mSyncClient = new SyncRecognizeClient(channel, AudioRecorderManager.RECORDER_SAMPLERATE);
         } catch (Exception e) {
             Log.e(MainActivity.class.getSimpleName(), "Error", e);
         }
@@ -65,28 +64,11 @@ public class GoogleSpeechRecognizerManager {
 
     public boolean recognizeFile(String audioFilePath, String challenge){
         byte audioByte[] = new  byte[AudioRecorderManager.RECORDER_AUDIO_BUFFER_SIZE];
-        ArrayList<String> responseList = new ArrayList<String>();
-        StreamingRecognizeResponse response;
 
         try {
             FileInputStream audioFileStream = new FileInputStream(new File(audioFilePath));
             while (audioFileStream.read(audioByte) != -1){
                 mStreamingClient.recognizeBytes(audioByte, audioByte.length);
-                response = mStreamingClient.getStreamingRecognizeResponse();
-
-//                if(response != null && response.getResultsCount() > 0 ) {
-//                    Log.d(getClass().getSimpleName(), "Received response: " +
-//                            TextFormat.printToString(response));
-//                    for (int i=0; i<response.getResultsCount(); i++){
-//                        StreamingRecognitionResult result = response.getResults(i);
-//                        for(int j=0; j<result.getAlternativesCount(); j++){
-//                            if(challenge.equals(result.getAlternatives(j).getTranscript())){
-//                                return true;
-//                            }
-//                        }
-//                    }
-//                }
-
             }
             mStreamingClient.onCompleted();
             mStreamingClient.finish();
@@ -97,7 +79,27 @@ public class GoogleSpeechRecognizerManager {
             e.printStackTrace();
         }
 
-        return false;
+        boolean match = false;
+
+        while(!mStreamingClient.isJobDone()){}
+
+        check_loop:
+        for (StreamingRecognizeResponse response: mStreamingClient.getStreamingRecognizeResponses()){
+            for (StreamingRecognitionResult result: response.getResultsList()) {
+                for (SpeechRecognitionAlternative alternative: result.getAlternativesList()) {
+                    if(challenge.equals(alternative.getTranscript())){
+                                match = true;
+                                break check_loop;
+                    }
+                }
+
+                if(result.getIsFinal()){
+                    break check_loop;
+                }
+            }
+        }
+
+        return match;
     }
 
     public void destroy(){

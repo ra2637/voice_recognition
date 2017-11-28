@@ -1,7 +1,6 @@
 package uw.ytchang.vaguard;
 
 import android.util.Log;
-import android.widget.TextView;
 
 import com.google.auth.oauth2.GoogleCredentials;
 
@@ -10,18 +9,16 @@ import com.google.cloud.speech.v1beta1.SpeechGrpc;
 import com.google.cloud.speech.v1beta1.StreamingRecognitionConfig;
 import com.google.cloud.speech.v1beta1.StreamingRecognizeRequest;
 import com.google.cloud.speech.v1beta1.StreamingRecognizeResponse;
-import com.google.cloud.speech.v1beta1.SyncRecognizeRequest;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.TextFormat;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
@@ -46,9 +43,9 @@ public class StreamingRecognizeClient implements StreamObserver<StreamingRecogni
     private static final List<String> OAUTH2_SCOPES =
             Arrays.asList("https://www.googleapis.com/auth/cloud-platform");
 
-    private StreamingRecognizeResponse streamingRecognizeResponse;
+    private ArrayList<StreamingRecognizeResponse> streamingRecognizeResponses;
 
-    private ReadWriteLock lock = new ReentrantReadWriteLock();
+    private boolean jobDone;
 
     /**
      * Construct client connecting to Cloud Speech server at {@code host:port}.
@@ -84,6 +81,8 @@ public class StreamingRecognizeClient implements StreamObserver<StreamingRecogni
         StreamingRecognizeRequest initial =
                 StreamingRecognizeRequest.newBuilder().setStreamingConfig(streamingConfig).build();
         requestObserver.onNext(initial);
+
+        streamingRecognizeResponses = new ArrayList<StreamingRecognizeResponse>();
     }
 
     @Override
@@ -91,10 +90,18 @@ public class StreamingRecognizeClient implements StreamObserver<StreamingRecogni
 
         Log.d(getClass().getSimpleName(), "Received response: " +
                     TextFormat.printToString(response));
-            Log.d(getClass().getSimpleName(), "channel isShutdown: "+mChannel.isShutdown());
-            Log.d(getClass().getSimpleName(), "channel isTerminated: "+mChannel.isTerminated());
+        Log.d(getClass().getSimpleName(), "type : "+response.getEndpointerType().name());
+        if(response.getEndpointerType().equals(StreamingRecognizeResponse.EndpointerType.ENDPOINTER_EVENT_UNSPECIFIED)){
+            streamingRecognizeResponses.add(response);
 
-        streamingRecognizeResponse = response;
+            if(response.getResults(response.getResultsCount()-1).getIsFinal()){
+                jobDone = true;
+            }
+        }
+        //END_OF_AUDIO if user doesn't respond
+        if (response.getEndpointerType().equals(StreamingRecognizeResponse.EndpointerType.END_OF_AUDIO)){
+            jobDone = true;
+        }
 
     }
 
@@ -118,6 +125,7 @@ public class StreamingRecognizeClient implements StreamObserver<StreamingRecogni
             mIsInitialized = true;
         }
 
+        jobDone = false;
         try {
             StreamingRecognizeRequest request =
                     StreamingRecognizeRequest.newBuilder()
@@ -152,7 +160,12 @@ public class StreamingRecognizeClient implements StreamObserver<StreamingRecogni
         return channel;
     }
 
-    public StreamingRecognizeResponse getStreamingRecognizeResponse() {
-        return streamingRecognizeResponse;
+    public List<StreamingRecognizeResponse> getStreamingRecognizeResponses() {
+
+        return streamingRecognizeResponses;
+    }
+
+    public boolean isJobDone(){
+        return  jobDone;
     }
 }

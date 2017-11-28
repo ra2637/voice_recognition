@@ -30,7 +30,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private final int RECORD_TIME =  5*1000;
 
     private TextToSpeech ttobj;
-    private String challenge;
+//    private String challenge;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +99,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 Log.d(TAG, "COMMAND state");
                 result_tv.setText("");
                 guide_line.setText("Say \"Transfer money to Yuntai\"");
-                recordVoice(State.COMMAND);
+                recordVoice(State.COMMAND, null);
                 break;
             case CHALLENGE:
                 Log.d(TAG, "CHALLENGE state");
@@ -157,17 +157,17 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
 
-    private void recordVoice(State state){
+    private void recordVoice(State state, String challenge){
         recordVoicePath = getBaseContext().getFilesDir().getPath()+"/test.wav";
         if(audioRecorderManager == null){
             audioRecorderManager = new AudioRecorderManager(getBaseContext());
         }
         audioRecorderManager.startRecording();
-        setRestartVoiceRecorder(RECORD_TIME, state);
+        setRestartVoiceRecorder(RECORD_TIME, state, challenge);
 
     }
 
-    private void setRestartVoiceRecorder(final int delay, final State state){
+    private void setRestartVoiceRecorder(final int delay, final State state, final String challenge){
         Log.d(TAG, "setRestartVoiceRecorder");
         new Thread(new Runnable() {
             @Override
@@ -176,10 +176,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     Thread.sleep(delay);
                     audioRecorderManager.stopRecording();
                     if(audioRecorderManager.isHasVoice()){
-                        voiceRecognition(state);
+                        voiceRecognition(state, challenge);
                     }else{
                         audioRecorderManager.startRecording();
-                        setRestartVoiceRecorder(RECORD_TIME, state);
+                        setRestartVoiceRecorder(RECORD_TIME, state, challenge);
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -188,7 +188,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }).start();
     }
 
-    private void voiceRecognition(State state) {
+    private void voiceRecognition(State state, String challenge) {
         // record the audio
         audioRecorderManager.stopRecording();
         while(true){
@@ -199,7 +199,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     if(state.equals(State.COMMAND)){
                         runProgress(State.CHALLENGE);
                     } else if(state.equals(State.CHALLENGE)){
-                        checkContent();
+                        checkContent(challenge);
                     }
                 }else{
                     speaker = null;
@@ -250,7 +250,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     guide_line.setText("Now please respond: " + challenge);
                     result_tv.setText("");
                     // record the response, recognizing the voice and the response content
-                    recordVoice(state);
+                    recordVoice(state, challenge);
                 }
             }
 
@@ -261,7 +261,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         });
     }
 
-    private void checkContent(){
+    private void checkContent(String challenge){
         Log.d(TAG, "checkContent");
         GoogleSpeechRecognizerManager googleSpeechRecognizerManager = new GoogleSpeechRecognizerManager(getApplicationContext());
         if(googleSpeechRecognizerManager.recognizeFile(recordVoicePath, challenge)){
