@@ -98,6 +98,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     private void runProgress(State state) {
+        result_tv.setText("");
         switch (state) {
             case TRIGGER:
                 Log.d(TAG, "TRIGGER state");
@@ -106,7 +107,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
             case COMMAND:
                 Log.d(TAG, "COMMAND state");
-                result_tv.setText("");
                 guide_line.setText("Say \"Transfer money to Yuntai\"");
                 recordVoice(State.COMMAND, null);
                 break;
@@ -133,6 +133,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 vaguard_listen_btn.setText(getString(R.string.vaguard_start));
                 guide_line.setText("Failed Authenticate!");
                 result_tv.setText("Command rejected\n");
+                break;
             case USER_NOT_EXIST:
                 Log.d(TAG, "USER_NOT_EXIST state");
                 vaguard_listen_btn.setText(getString(R.string.vaguard_start));
@@ -207,19 +208,32 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private void voiceRecognition(State state, String challenge) {
         // record the audio
         audioRecorderManager.stopRecording();
+        if(state.equals(State.COMMAND)){
+            result_tv.setText(result_tv.getText() + "\n"
+                    + "Identifing speaker...\n");
+        }else if(state.equals(State.CHALLENGE)){
+            result_tv.setText(result_tv.getText() + "\n"
+                    + "Verifying speaker...\n");
+        }
+
         while(true){
             Log.d(TAG, "file is closed: "+ audioRecorderManager.isFileClosed() );
             if(audioRecorderManager.isFileClosed()){
-
-                if((speaker = alizeVoiceRecognizerManager.identifySpeaker(recordVoicePath)) != null) {
-                    if(state.equals(State.COMMAND)){
+                if(state.equals(State.COMMAND)) {
+                    if((speaker = alizeVoiceRecognizerManager.identifySpeaker(recordVoicePath)) != null){
                         runProgress(State.CHALLENGE);
-                    } else if(state.equals(State.CHALLENGE)){
-                        checkContent(challenge);
+                    }else{
+                        speaker = null;
+                        runProgress(State.USER_NOT_EXIST);
                     }
-                }else{
-                    speaker = null;
-                    runProgress(State.USER_NOT_EXIST);
+
+                }else if(state.equals(State.CHALLENGE)){
+                    if(alizeVoiceRecognizerManager.verifySpeaker(speaker, recordVoicePath)){
+                        checkContent(challenge);
+                    }else{
+                        Log.d(TAG, "voiceprint is not match: "+speaker);
+                        runProgress(State.REJECT);
+                    }
                 }
                 break;
             }
