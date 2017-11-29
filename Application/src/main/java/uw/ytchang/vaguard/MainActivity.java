@@ -23,7 +23,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private final String TAG = "MainActivity";
 
 
-    private enum State {TRIGGER, COMMAND, CHALLENGE, STOP, FINISH, REJECT};
+    private enum State {TRIGGER, COMMAND, CHALLENGE, STOP, FINISH, REJECT, USER_NOT_EXIST};
 
     private TextView guide_line, result_tv;
     private Button vaguard_listen_btn, add_user_btn;
@@ -133,6 +133,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 vaguard_listen_btn.setText(getString(R.string.vaguard_start));
                 guide_line.setText("Failed Authenticate!");
                 result_tv.setText("Command rejected\n");
+            case USER_NOT_EXIST:
+                Log.d(TAG, "USER_NOT_EXIST state");
+                vaguard_listen_btn.setText(getString(R.string.vaguard_start));
+                guide_line.setText("Failed Identified!");
+                result_tv.setText("Cannot find corresponding speaker, please add your voiceprint first.\n");
                 break;
         }
     }
@@ -170,6 +175,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         recordVoicePath = getBaseContext().getFilesDir().getPath()+"/test.wav";
         if(audioRecorderManager == null){
             audioRecorderManager = new AudioRecorderManager(recordVoicePath);
+        }else{
+            audioRecorderManager.setOutputFileName(recordVoicePath);
         }
         audioRecorderManager.startRecording();
         setRestartVoiceRecorder(RECORD_TIME, state, challenge);
@@ -212,6 +219,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     }
                 }else{
                     speaker = null;
+                    runProgress(State.USER_NOT_EXIST);
                 }
                 break;
             }
@@ -280,31 +288,4 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     }
 
-
-
-//    private void playMusic() {
-//        if (mMediaPlayer == null) {
-//            mMediaPlayer = MediaPlayer.create(this, Uri.parse(recordVoicePath));
-//            mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-//                @Override
-//                public void onCompletion(MediaPlayer mp) {
-//                    // we need to transition to the READY/Home state
-//                    Log.d(TAG, "Music Finished");
-//                    stopMusic();
-//                }
-//            });
-//        }
-//        mMediaPlayer.start();
-//    }
-//
-//    /**
-//     * Stops the playback of the MP3 file.
-//     */
-//    private void stopMusic() {
-//        if (mMediaPlayer != null) {
-//            mMediaPlayer.stop();
-//            mMediaPlayer.release();
-//            mMediaPlayer = null;
-//        }
-//    }
 }

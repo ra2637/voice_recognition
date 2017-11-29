@@ -99,9 +99,9 @@ public class StreamingRecognizeClient implements StreamObserver<StreamingRecogni
             }
         }
         //END_OF_AUDIO if user doesn't respond
-        if (response.getEndpointerType().equals(StreamingRecognizeResponse.EndpointerType.END_OF_AUDIO)){
-            jobDone = true;
-        }
+//        if (response.getEndpointerType().equals(StreamingRecognizeResponse.EndpointerType.END_OF_AUDIO)){
+//            jobDone = true;
+//        }
 
     }
 
