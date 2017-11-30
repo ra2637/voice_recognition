@@ -149,7 +149,6 @@ public class AlizeVoiceRecognizerManager {
             byte[] audioByte = new byte[AudioRecorderManager.RECORDER_AUDIO_BUFFER_SIZE];
             alizeSystem.addAudio(trainAudioPath);
             alizeSystem.createSpeakerModel(speakerName);
-            alizeSystem.adaptSpeakerModel();
 
             // Reset input before sending another signal
             alizeSystem.resetAudio();
@@ -178,7 +177,7 @@ public class AlizeVoiceRecognizerManager {
             byte[] moreAudio = new byte[(int) testFile.length()];
             testInputstream.read(moreAudio);
             alizeSystem.addAudio(moreAudio);
-            Log.d(TAG, "speaker identification score: "+alizeSystem.identifySpeaker().score);
+            Log.d(TAG, "identify speaker "+ alizeSystem.identifySpeaker().speakerId +" score: "+alizeSystem.identifySpeaker().score);
 //            Log.d(TAG, "speaker score of yt: "+alizeSystem.verifySpeaker("yt").score);
 //            Log.d(TAG, "speaker score of yt: "+alizeSystem.verifySpeaker("yt").match);
 
@@ -213,7 +212,8 @@ public class AlizeVoiceRecognizerManager {
             byte[] moreAudio = new byte[(int) testFile.length()];
             testInputstream.read(moreAudio);
             alizeSystem.addAudio(moreAudio);
-            Log.d(TAG, "speaker verification score: "+alizeSystem.verifySpeaker(speakerId).score);
+            Log.d(TAG, "verify speaker "+ speakerId +" score: "+alizeSystem.verifySpeaker(speakerId).score);
+//            Log.d(TAG, "speaker verification score: "+alizeSystem.verifySpeaker(speakerId).score);
 //            Log.d(TAG, "speaker score of yt: "+alizeSystem.verifySpeaker("yt").match);
 
             return alizeSystem.verifySpeaker(speakerId).match;

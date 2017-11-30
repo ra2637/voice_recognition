@@ -226,7 +226,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         speaker = null;
                         runProgress(State.USER_NOT_EXIST);
                     }
-
                 }else if(state.equals(State.CHALLENGE)){
                     if(alizeVoiceRecognizerManager.verifySpeaker(speaker, recordVoicePath)){
                         checkContent(challenge);
