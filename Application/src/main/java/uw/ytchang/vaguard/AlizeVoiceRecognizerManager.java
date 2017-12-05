@@ -80,16 +80,33 @@ public class AlizeVoiceRecognizerManager {
                 return;
             }
             Log.d(TAG, "Add user: "+speakerName);
-            alizeSystem.resetAudio();
-            alizeSystem.resetFeatures();
-
-            alizeSystem.addAudio(trimmedAudioPath);
-            alizeSystem.createSpeakerModel(speakerName);
-
             // Reset input before sending another signal
             alizeSystem.resetAudio();
             alizeSystem.resetFeatures();
-            speakers.add(speakerName);
+
+            alizeSystem.addAudio(trimAudioSilence(trimmedAudioPath).toByteArray());
+            if(speakerName.equals("yt1")){
+                alizeSystem.createSpeakerModel("yt");
+                speakers.add("yt");
+//                for (int i=2; i<=8; i++){
+//                    alizeSystem.resetAudio();
+//                    alizeSystem.resetFeatures();
+//                    alizeSystem.addAudio(trimAudioSilence(speakersAudioFolder+"/yt"+i+".wav").toByteArray());
+//                    alizeSystem.adaptSpeakerModel("yt");
+//                }
+            } else if(speakerName.contains("yt")){
+                return;
+            } else if(speakerName.equals("may1")){
+                alizeSystem.createSpeakerModel("may");
+                speakers.add("may");
+            } else if(speakerName.contains("may")){
+                return;
+//                alizeSystem.adaptSpeakerModel("may");
+            }else{
+                alizeSystem.createSpeakerModel(speakerName);
+                speakers.add(speakerName);
+            }
+
         } catch (AlizeException e) {
             e.printStackTrace();
         }
@@ -103,28 +120,15 @@ public class AlizeVoiceRecognizerManager {
                 return;
             }
             Log.d(TAG, "Add user: "+speakerName);
-            alizeSystem.resetAudio();
-            alizeSystem.resetFeatures();
-
-            ByteArrayOutputStream outputStream = trimAudioSilence(trainAudioPath);
-            alizeSystem.addAudio(outputStream.toByteArray());
-            alizeSystem.createSpeakerModel(speakerName);
-
             // Reset input before sending another signal
             alizeSystem.resetAudio();
             alizeSystem.resetFeatures();
+
+            alizeSystem.addAudio(trimAudioSilence(trainAudioPath).toByteArray());
+            alizeSystem.createSpeakerModel(speakerName);
             speakers.add(speakerName);
 
-            File file = new File(trainAudioPath);
-            file.delete();
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            fileOutputStream.write(outputStream.toByteArray());
-            fileOutputStream.close();
         } catch (AlizeException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -141,10 +145,12 @@ public class AlizeVoiceRecognizerManager {
             alizeSystem.resetAudio();
             alizeSystem.resetFeatures();
 
-            alizeSystem.addAudio(trimAudioSilence(audioFilePath).toByteArray());
+            alizeSystem.addAudio(audioFilePath);
+//            alizeSystem.addAudio(trimAudioSilence(audioFilePath).toByteArray());
             Log.d(TAG, "identify speaker "+ alizeSystem.identifySpeaker().speakerId +" score: "+alizeSystem.identifySpeaker().score);
-            Log.d(TAG, "speaker score of yt: "+alizeSystem.verifySpeaker("yt").score);
-            Log.d(TAG, "speaker score of yt: "+alizeSystem.verifySpeaker("yt").match);
+            for (String speaker: speakers) {
+                Log.d(TAG, "speaker score of "+speaker+": "+alizeSystem.verifySpeaker(speaker).score);
+            }
             if(alizeSystem.identifySpeaker().match){
                 return alizeSystem.identifySpeaker().speakerId;
             }
@@ -166,10 +172,12 @@ public class AlizeVoiceRecognizerManager {
             alizeSystem.resetAudio();
             alizeSystem.resetFeatures();
 
-            alizeSystem.addAudio(trimAudioSilence(audioFilePath).toByteArray());
+            alizeSystem.addAudio(audioFilePath);
+//            alizeSystem.addAudio(trimAudioSilence(audioFilePath).toByteArray());
             Log.d(TAG, "verify speaker "+ speakerId +" score: "+alizeSystem.verifySpeaker(speakerId).score);
-//            Log.d(TAG, "speaker verification score: "+alizeSystem.verifySpeaker(speakerId).score);
-//            Log.d(TAG, "speaker score of yt: "+alizeSystem.verifySpeaker("yt").match);
+            for (String speaker: speakers) {
+                Log.d(TAG, "speaker score of "+speaker+": "+alizeSystem.verifySpeaker(speaker).score);
+            }
 
             return alizeSystem.verifySpeaker(speakerId).match;
 
