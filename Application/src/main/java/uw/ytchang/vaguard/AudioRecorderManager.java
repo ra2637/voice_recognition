@@ -100,8 +100,6 @@ public class AudioRecorderManager {
                 int bytesRead = mAudioRecord.read(sData, 0, RECORDER_AUDIO_BUFFER_SIZE);
                 if (bytesRead > 0) {
                     fileOutputStream.write(sData, 0, bytesRead);
-                    System.out.println("bytesRead:" +bytesRead);
-                    System.out.println("RECORDER_AUDIO_BUFFER_SIZE: "+ RECORDER_AUDIO_BUFFER_SIZE);
                     if(bytesRead != RECORDER_AUDIO_BUFFER_SIZE){
                         hasVoice = true;
                     }
