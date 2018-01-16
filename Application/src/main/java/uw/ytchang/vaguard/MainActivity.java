@@ -23,7 +23,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private final String TAG = "MainActivity";
 
 
-    private enum State {TRIGGER, COMMAND, CHALLENGE, STOP, FINISH, REJECT, USER_NOT_EXIST};
+    private enum State {TRIGGER, COMMAND, CHALLENGE, STOP, FINISH, REJECT_SPEAKER, REJECT_RESPONSE, USER_NOT_EXIST};
 
     private TextView guide_line, result_tv;
     private Button vaguard_listen_btn, add_user_btn;
@@ -119,6 +119,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
             case STOP:
                 Log.d(TAG, "STOP state");
+                if(audioRecorderManager != null){
+                    audioRecorderManager.stopRecording();
+                }
                 guide_line.setText("");
                 result_tv.setText("Process stopped");
                 break;
@@ -128,11 +131,17 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 guide_line.setText("Succeeded Authentication!");
                 result_tv.setText("Transfer money...");
                 break;
-            case REJECT:
-                Log.d(TAG, "REJECT state");
+            case REJECT_SPEAKER:
+                Log.d(TAG, "REJECT_SPEAKER state");
                 vaguard_listen_btn.setText(getString(R.string.vaguard_start));
-                guide_line.setText("Failed Authenticate!");
-                result_tv.setText("Command rejected\n");
+                guide_line.setText("Failed Speaker Verification!");
+                result_tv.setText("You are not "+ speaker + "\n");
+                break;
+            case REJECT_RESPONSE:
+                Log.d(TAG, "REJECT_RESPONSE state");
+                vaguard_listen_btn.setText(getString(R.string.vaguard_start));
+                guide_line.setText("Failed challenge Authentication!");
+                result_tv.setText("Response is not the same with challenge\n");
                 break;
             case USER_NOT_EXIST:
                 Log.d(TAG, "USER_NOT_EXIST state");
@@ -231,7 +240,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         checkContent(challenge);
                     }else{
                         Log.d(TAG, "voiceprint is not match: "+speaker);
-                        runProgress(State.REJECT);
+                        runProgress(State.REJECT_SPEAKER);
                     }
                 }
                 break;
@@ -297,7 +306,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if(googleSpeechRecognizerManager.recognizeFile(recordVoicePath, challenge)){
             runProgress(State.FINISH);
         }else{
-            runProgress(State.REJECT);
+            runProgress(State.REJECT_RESPONSE);
         }
     }
 

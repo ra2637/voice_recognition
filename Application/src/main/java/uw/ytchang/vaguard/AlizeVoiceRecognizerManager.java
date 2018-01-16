@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 
 import AlizeSpkRec.*;
 
@@ -31,7 +33,7 @@ public class AlizeVoiceRecognizerManager {
 
     private String speakerBaseFolder = "speakers";
     private static String speakersAudioFolder;
-    private static ArrayList<String> speakers;
+//    private static ArrayList<String> speakers;
 
 
     public AlizeVoiceRecognizerManager(Context context) {
@@ -55,7 +57,7 @@ public class AlizeVoiceRecognizerManager {
                     audioFolder.mkdir();
                 }
 
-                speakers = new ArrayList<String>();
+//                speakers = new ArrayList<String>();
                 File[] listOfFiles = audioFolder.listFiles();
                 Log.d(TAG, "files in audioFolder: "+listOfFiles.length);
                 for (int i = 0; i < listOfFiles.length; i++) {
@@ -84,28 +86,10 @@ public class AlizeVoiceRecognizerManager {
             alizeSystem.resetAudio();
             alizeSystem.resetFeatures();
 
-            alizeSystem.addAudio(trimAudioSilence(trimmedAudioPath).toByteArray());
-            if(speakerName.equals("yt1")){
-                alizeSystem.createSpeakerModel("yt");
-                speakers.add("yt");
-//                for (int i=2; i<=8; i++){
-//                    alizeSystem.resetAudio();
-//                    alizeSystem.resetFeatures();
-//                    alizeSystem.addAudio(trimAudioSilence(speakersAudioFolder+"/yt"+i+".wav").toByteArray());
-//                    alizeSystem.adaptSpeakerModel("yt");
-//                }
-            } else if(speakerName.contains("yt")){
-                return;
-            } else if(speakerName.equals("may1")){
-                alizeSystem.createSpeakerModel("may");
-                speakers.add("may");
-            } else if(speakerName.contains("may")){
-                return;
-//                alizeSystem.adaptSpeakerModel("may");
-            }else{
-                alizeSystem.createSpeakerModel(speakerName);
-                speakers.add(speakerName);
-            }
+            alizeSystem.addAudio(trimmedAudioPath);
+//            alizeSystem.addAudio(trimAudioSilence(trimmedAudioPath).toByteArray());
+            alizeSystem.createSpeakerModel(speakerName);
+
 
         } catch (AlizeException e) {
             e.printStackTrace();
@@ -124,9 +108,11 @@ public class AlizeVoiceRecognizerManager {
             alizeSystem.resetAudio();
             alizeSystem.resetFeatures();
 
-            alizeSystem.addAudio(trimAudioSilence(trainAudioPath).toByteArray());
+            alizeSystem.addAudio(trainAudioPath);
+//            alizeSystem.addAudio(trimAudioSilence(trainAudioPath).toByteArray());
             alizeSystem.createSpeakerModel(speakerName);
-            speakers.add(speakerName);
+//            speakers.add(speakerName);
+            Log.d(TAG, "Speaker model in alize system:"+ alizeSystem.speakerCount());
 
         } catch (AlizeException e) {
             e.printStackTrace();
@@ -148,7 +134,7 @@ public class AlizeVoiceRecognizerManager {
             alizeSystem.addAudio(audioFilePath);
 //            alizeSystem.addAudio(trimAudioSilence(audioFilePath).toByteArray());
             Log.d(TAG, "identify speaker "+ alizeSystem.identifySpeaker().speakerId +" score: "+alizeSystem.identifySpeaker().score);
-            for (String speaker: speakers) {
+            for (String speaker: alizeSystem.speakerIDs()) {
                 Log.d(TAG, "speaker score of "+speaker+": "+alizeSystem.verifySpeaker(speaker).score);
             }
             if(alizeSystem.identifySpeaker().match){
@@ -175,7 +161,7 @@ public class AlizeVoiceRecognizerManager {
             alizeSystem.addAudio(audioFilePath);
 //            alizeSystem.addAudio(trimAudioSilence(audioFilePath).toByteArray());
             Log.d(TAG, "verify speaker "+ speakerId +" score: "+alizeSystem.verifySpeaker(speakerId).score);
-            for (String speaker: speakers) {
+            for (String speaker: alizeSystem.speakerIDs()) {
                 Log.d(TAG, "speaker score of "+speaker+": "+alizeSystem.verifySpeaker(speaker).score);
             }
 
@@ -187,35 +173,41 @@ public class AlizeVoiceRecognizerManager {
         return false;
     }
 
-    private ByteArrayOutputStream trimAudioSilence(String audioFilePath){
-        try{
-            File file = new File(audioFilePath);
-            FileInputStream inputStream = new FileInputStream(file);
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-            while(true){
-                int b = inputStream.read();
-                if(b>0){
-                    outputStream.write(b);
-                }else if(b == -1){
-                    break;
-                }
-            }
-            inputStream.close();
-            outputStream.close();
-            return outputStream;
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-
-        return null;
-    }
+//    private ByteArrayOutputStream trimAudioSilence(String audioFilePath){
+//        try{
+//            File file = new File(audioFilePath);
+//            FileInputStream inputStream = new FileInputStream(file);
+//            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+//
+//            while(true){
+//                int b = inputStream.read();
+//                if(b>0){
+//                    outputStream.write(b);
+//                }else if(b == -1){
+//                    break;
+//                }
+//            }
+//            inputStream.close();
+//            outputStream.close();
+//            return outputStream;
+//        }catch (IOException e){
+//            e.printStackTrace();
+//        }
+//
+//        return null;
+//    }
 
     public String getSpeakersAudioFolder(){
         return speakersAudioFolder;
     }
 
     public boolean hasSpeaker(String speakerName){
-        return speakers.contains(speakerName);
+        ArrayList<String> names = null;
+        try {
+            names = new ArrayList<String>(Arrays.asList(alizeSystem.speakerIDs()));
+        } catch (AlizeException e) {
+            e.printStackTrace();
+        }
+        return names.contains(speakerName);
     }
 }

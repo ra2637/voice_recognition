@@ -17,7 +17,8 @@ import java.io.IOException;
 public class AudioRecorderManager {
     private static final String TAG = "AudioRecorderManager";
 
-    public static final int RECORDER_SAMPLERATE = 16000;
+//    public static final int RECORDER_SAMPLERATE = 16000;
+    public static final int RECORDER_SAMPLERATE = 8000;
     private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
     private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
     public static final int RECORDER_AUDIO_BUFFER_SIZE = AudioRecord.getMinBufferSize(RECORDER_SAMPLERATE, AudioFormat
