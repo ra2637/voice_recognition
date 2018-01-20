@@ -40,6 +40,11 @@ public class AlizeVoiceRecognizerManager {
         try {
             if (alizeSystem == null) {
                 Log.d(TAG, "initial alizeSystem");
+
+                speakersAudioFolder = context.getFilesDir().getPath()+"/"+speakerBaseFolder;
+                File audioFolders = new File(speakersAudioFolder);
+                audioFolders.mkdirs();
+
                 InputStream configAsset = context.getAssets().open("alize.cfg");
 
                 alizeSystem = new SimpleSpkDetSystem(configAsset, context.getFilesDir().getPath());

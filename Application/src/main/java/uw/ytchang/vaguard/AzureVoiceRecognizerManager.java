@@ -26,7 +26,7 @@ import org.json.JSONObject;
  */
 
 public class AzureVoiceRecognizerManager {
-    private String speakerBaseFolder = "speakers_wav";
+    private String speakerBaseFolder = "azure/speakers";
     private static String speakersAudioFolder;
 
 

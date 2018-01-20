@@ -1,6 +1,5 @@
 package uw.ytchang.vaguard;
 
-import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,8 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.io.File;
-import java.util.regex.Pattern;
+import java.util.concurrent.ExecutionException;
 
 
 public class AddUserActivity extends AppCompatActivity implements View.OnClickListener {
@@ -19,7 +17,7 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
     private EditText user_name;
     private TextView guide_line;
     private AlizeVoiceRecognizerManager alizeVoiceRecognizerManager;
-    private AzureVoiceRecognizerManager azureVoiceRecognizerManager;
+    private AzureVoiceRecognizerManager2 azureVoiceRecognizerManager;
     private AudioRecorderManager audioRecorderManager;
 
 
@@ -31,7 +29,7 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
         setClickListeners();
 
         alizeVoiceRecognizerManager = new AlizeVoiceRecognizerManager(getBaseContext());
-        azureVoiceRecognizerManager = new AzureVoiceRecognizerManager(getBaseContext());
+        azureVoiceRecognizerManager = new AzureVoiceRecognizerManager2(getBaseContext());
     }
 
     private void findViews() {
@@ -79,16 +77,31 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
                 }else{
                     // TODO: stop recording process and create user in alize
                     audioRecorderManager.stopRecording();
-                    alizeVoiceRecognizerManager.addSpeaker(speakerName, outputFile);
+//                    alizeVoiceRecognizerManager.addSpeaker(speakerName, outputFile);
 
-                    AzureVoiceRecognizerManager.AddSpeaker addSpeaker = azureVoiceRecognizerManager.new AddSpeaker();
-                    String wavOutputFile = azureVoiceRecognizerManager.getSpeakersAudioFolder()+"/"+user_name.getText()+".wav";
+//                    AzureVoiceRecognizerManager.AddSpeaker addSpeaker = azureVoiceRecognizerManager.new AddSpeaker();
+//                    String wavOutputFile = azureVoiceRecognizerManager.getSpeakersAudioFolder()+"/"+user_name.getText()+".wav";
+//                    audioRecorderManager.createWavFile(outputFile, wavOutputFile);
+//                    addSpeaker.execute(speakerName, wavOutputFile);
+
+                    String wavOutputFile = azureVoiceRecognizerManager.getSpeakersAudioFolder()+"/"+speakerName+".wav";
                     audioRecorderManager.createWavFile(outputFile, wavOutputFile);
-                    addSpeaker.execute(speakerName, wavOutputFile);
-                    user_name.setFreezesText(false);
-                    user_name.setText("");
-                    guide_line.setText("Added user "+ speakerName + " to the system.");
-                    record_btn.setText(getString(R.string.start_recording));
+                    azureVoiceRecognizerManager.execute(AbstractVoiceRecognizerManager.Actions.ADD_SPEAKER.toString(), speakerName, wavOutputFile);
+
+                    try {
+                        Boolean result = azureVoiceRecognizerManager.get();
+                        if(result){
+                            user_name.setFreezesText(false);
+                            user_name.setText("");
+                            guide_line.setText("Added user "+ speakerName + " to the system.");
+                            record_btn.setText(getString(R.string.start_recording));
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
+
                 }
                 break;
         }
