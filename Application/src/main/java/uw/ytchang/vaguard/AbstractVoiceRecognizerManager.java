@@ -18,8 +18,10 @@ import java.util.HashMap;
 
 public abstract class AbstractVoiceRecognizerManager extends AsyncTask<String, Void, Boolean>{
     private final String TAG = this.getClass().getSimpleName();
+    private final String DB_FILE = "id_name.db";
+
     private String speakersAudioFolder;
-    private final String DB_PATH = "id_name.db";
+    private String dbPath;
 
     protected Context context;
     private HashMap<String, String> id_name_map;
@@ -33,16 +35,17 @@ public abstract class AbstractVoiceRecognizerManager extends AsyncTask<String, V
 
     public AbstractVoiceRecognizerManager(Context context, String speakerBaseFolder){
         Log.d(TAG, "init voice recognizer");
-        
+
         this.context = context;
-        speakersAudioFolder = context.getFilesDir().getPath()+"/"+speakerBaseFolder;
+        speakersAudioFolder = context.getFilesDir().getPath()+"/"+speakerBaseFolder+"/speakers";
         File audioFolders = new File(speakersAudioFolder);
         audioFolders.mkdirs();
 
         // Recover map from db
+        dbPath = context.getFilesDir().getPath()+"/"+speakerBaseFolder+"/"+ DB_FILE;
         id_name_map = new HashMap<String, String>();
         try{
-            File dbFile = new File(context.getFilesDir().getPath()+"/"+DB_PATH);
+            File dbFile = new File(dbPath);
             if(dbFile.exists() && dbFile.length() > 0){
                 BufferedReader reader = new BufferedReader(new FileReader(dbFile));
                 String line;
@@ -80,9 +83,8 @@ public abstract class AbstractVoiceRecognizerManager extends AsyncTask<String, V
         }
 
         String line = speakerId+","+speakerName;
-        String filePath = context.getFilesDir().getPath() + "/" + DB_PATH;
         try {
-            File file = new File(filePath);
+            File file = new File(dbPath);
             BufferedWriter writer;
 
             if(file.createNewFile()){ // file is new

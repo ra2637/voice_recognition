@@ -5,12 +5,15 @@ import android.util.Log;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -18,6 +21,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.TimerTask;
 
 /**
  * Created by ra2637 on 1/19/18.
@@ -27,7 +31,7 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
     private final String TAG = this.getClass().getSimpleName();
     private static final String AZURE_CREDENTIAL_FILE = "azure_credentials";
     private final String AZURE_API_URI = "https://westus.api.cognitive.microsoft.com/spid/v1.0";
-    private static String speakerBaseFolder = "azure/speakers";
+    private static String speakerBaseFolder = "azure";
 
     private HttpClient httpClient;
     private String credentialString;
@@ -84,8 +88,7 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
         try {
             URIBuilder builder = new URIBuilder(AZURE_API_URI + "/identificationProfiles");
 
-            URI uri = builder.build();
-            HttpPost request = new HttpPost(uri);
+            HttpPost request = new HttpPost(builder.build());
             request.setHeader("Content-Type", "application/json");
             request.setHeader("Ocp-Apim-Subscription-Key", credentialString);
 
@@ -134,24 +137,76 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
             HttpEntity entity = response.getEntity();
 
             if (entity != null) {
-                BufferedReader dataInputStream = new BufferedReader(new InputStreamReader(entity.getContent()));
-                StringBuilder reponseStr = new StringBuilder();
-                String line;
-                while((line = dataInputStream.readLine()) != null){
-                    reponseStr.append(line+"\n");
-                }
-                Log.d(TAG, reponseStr.toString());
-                Log.d(TAG+"/Enroll response header:", String.valueOf(response.getStatusLine().getStatusCode()));
-                if(response.getStatusLine().getStatusCode()/200 == 1){
-                    return true;
+                if(response.getStatusLine().getStatusCode() == 202){
+                    String operationUri = response.getFirstHeader("Operation-Location").getValue();
+                    Log.d(TAG, "operation location value: "+operationUri);
+                    int tryTimes = 3;
+                    while(tryTimes>=0){
+                        Thread.sleep(1000);
+                        tryTimes--;
+                        JSONObject result = checkAzureOperation(operationUri);
+                        if(result.getString("status").equals("succeeded") &&
+                                result.getJSONObject("processingResult").getString("enrollmentStatus").equals("Enrolled")){
+                            return true;
+                        }
+                    }
                 } else{
-                    Log.d(TAG, "enroll failed: "+reponseStr);
+                    Log.d(TAG, "enroll failed");
+                    return false;
                 }
+
+
+//                BufferedReader dataInputStream = new BufferedReader(new InputStreamReader(entity.getContent()));
+//                StringBuilder reponseStr = new StringBuilder();
+//                String line;
+//                while((line = dataInputStream.readLine()) != null){
+//                    reponseStr.append(line+"\n");
+//                }
+//                Log.d(TAG, reponseStr.toString());
+//                Log.d(TAG+"/Enroll response header:", String.valueOf(response.getStatusLine().getStatusCode()));
+//                if(response.getStatusLine().getStatusCode()/200 == 1){
+//                    return true;
+//                } else{
+//                    Log.d(TAG, "enroll failed: "+reponseStr);
+//                }
             }
         } catch (Exception e) {
             Log.d(TAG, e.getMessage());
         }
         return false;
+    }
+
+    private JSONObject checkAzureOperation(String url){
+        try{
+            URIBuilder builder = new URIBuilder(url);
+
+            HttpGet request = new HttpGet(builder.build());
+            request.setHeader("Content-Type", "application/json");
+            request.setHeader("Ocp-Apim-Subscription-Key", credentialString);
+
+            HttpResponse response = httpClient.execute(request);
+            if(response.getStatusLine().getStatusCode() == HttpStatus.SC_OK){
+                HttpEntity entity = response.getEntity();
+
+                if (entity != null) {
+                    BufferedReader dataInputStream = new BufferedReader(new InputStreamReader(entity.getContent()));
+                    StringBuilder reponseStr = new StringBuilder();
+                    String line;
+                    while((line = dataInputStream.readLine()) != null){
+                        reponseStr.append(line);
+                    }
+                    JSONObject jsonObj = new JSONObject(reponseStr.toString());
+                    Log.d(TAG, "operation back: "+jsonObj.toString());
+                    return jsonObj;
+                }
+            }
+
+        } catch (Exception e){
+            Log.d(TAG, e.getMessage());
+        }
+
+
+        return null;
     }
 
     @Override
