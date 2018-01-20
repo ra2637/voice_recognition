@@ -31,7 +31,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private AlizeVoiceRecognizerManager alizeVoiceRecognizerManager;
     private AzureVoiceRecognizerManager azureVoiceRecognizerManager;
     private static AudioRecorderManager audioRecorderManager;
-    private String recordVoicePath, speaker;
+//    private String recordVoicePath,
+    private String speaker;
     private final int RECORD_TIME =  5*1000;
 
     private TextToSpeech ttobj;
@@ -184,7 +185,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 
     private void recordVoice(State state, String challenge){
-        recordVoicePath = getBaseContext().getFilesDir().getPath()+"/test.wav";
+        String recordVoicePath = getBaseContext().getFilesDir().getPath()+"/test.pcm";
         if(audioRecorderManager == null){
             audioRecorderManager = new AudioRecorderManager(recordVoicePath);
         }else{
@@ -231,14 +232,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
             Log.d(TAG, "file is closed: "+ audioRecorderManager.isFileClosed() );
             if(audioRecorderManager.isFileClosed()){
                 if(state.equals(State.COMMAND)) {
-                    if((speaker = alizeVoiceRecognizerManager.identifySpeaker(recordVoicePath)) != null){
+                    if((speaker = alizeVoiceRecognizerManager.identifySpeaker(audioRecorderManager.getOutputFileName())) != null){
                         runProgress(State.CHALLENGE);
                     }else{
                         speaker = null;
                         runProgress(State.USER_NOT_EXIST);
                     }
                 }else if(state.equals(State.CHALLENGE)){
-                    if(alizeVoiceRecognizerManager.verifySpeaker(speaker, recordVoicePath)){
+                    if(alizeVoiceRecognizerManager.verifySpeaker(speaker, audioRecorderManager.getOutputFileName())){
                         checkContent(challenge);
                     }else{
                         Log.d(TAG, "voiceprint is not match: "+speaker);
@@ -305,7 +306,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private void checkContent(String challenge){
         Log.d(TAG, "checkContent");
         GoogleSpeechRecognizerManager googleSpeechRecognizerManager = new GoogleSpeechRecognizerManager(getApplicationContext());
-        if(googleSpeechRecognizerManager.recognizeFile(recordVoicePath, challenge)){
+        if(googleSpeechRecognizerManager.recognizeFile(audioRecorderManager.getOutputFileName(), challenge)){
             runProgress(State.FINISH);
         }else{
             runProgress(State.REJECT_RESPONSE);

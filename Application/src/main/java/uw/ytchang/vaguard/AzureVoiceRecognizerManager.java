@@ -7,16 +7,9 @@ import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -25,21 +18,29 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.apache.http.entity.StringEntity;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * Created by ra2637 on 1/16/18.
  */
 
-public class AzureVoiceRecognizerManager{
+public class AzureVoiceRecognizerManager {
+    private String speakerBaseFolder = "speakers_wav";
+    private static String speakersAudioFolder;
+
 
     HttpClient httpClient;
     String credentialString;
 
     public AzureVoiceRecognizerManager(final Context context){
+
+        speakersAudioFolder = context.getFilesDir().getPath()+"/"+speakerBaseFolder;
+        File audioFolder = new File(speakersAudioFolder);
+        if(!audioFolder.exists()){
+            audioFolder.mkdir();
+        }
+
         try {
             if(httpClient == null){
                 httpClient = HttpClients.createDefault();
@@ -78,16 +79,14 @@ public class AzureVoiceRecognizerManager{
         return false;
     }
 
-
-    public String getSpeakersAudioFolder(){
-        return null;
-    }
-
     public boolean hasSpeaker(String speakerName){
 
         return false;
     }
 
+    public String getSpeakersAudioFolder(){
+        return speakersAudioFolder;
+    }
 
 //    private String createSpeakerProfileInAzure(){
 //        try {
@@ -217,7 +216,6 @@ public class AzureVoiceRecognizerManager{
 
             // Request body
             FileEntity reqEntity = new FileEntity(new File(trainAudioPath), "multipart/form");
-
             request.setEntity(reqEntity);
 
             HttpResponse response = httpClient.execute(request);

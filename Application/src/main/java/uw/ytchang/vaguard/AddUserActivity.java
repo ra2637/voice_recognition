@@ -51,7 +51,7 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
         switch (v.getId()) {
             case R.id.record_btn:
                 String speakerName = user_name.getText().toString();
-                String outputFile = alizeVoiceRecognizerManager.getSpeakersAudioFolder()+"/"+user_name.getText()+".wav";;
+                String outputFile = alizeVoiceRecognizerManager.getSpeakersAudioFolder()+"/"+user_name.getText()+".pcm";;
                 if(record_btn.getText().equals(getString(R.string.start_recording))){
                     // Check if username is valid
                     user_name.setFreezesText(true);
@@ -80,8 +80,11 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
                     // TODO: stop recording process and create user in alize
                     audioRecorderManager.stopRecording();
                     alizeVoiceRecognizerManager.addSpeaker(speakerName, outputFile);
+
                     AzureVoiceRecognizerManager.AddSpeaker addSpeaker = azureVoiceRecognizerManager.new AddSpeaker();
-                    addSpeaker.execute(speakerName, outputFile);
+                    String wavOutputFile = azureVoiceRecognizerManager.getSpeakersAudioFolder()+"/"+user_name.getText()+".wav";
+                    audioRecorderManager.createWavFile(outputFile, wavOutputFile);
+                    addSpeaker.execute(speakerName, wavOutputFile);
                     user_name.setFreezesText(false);
                     user_name.setText("");
                     guide_line.setText("Added user "+ speakerName + " to the system.");
