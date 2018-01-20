@@ -13,6 +13,7 @@ android {
     compileSdkVersion 26
     buildToolsVersion '26.0.2'
 
+    useLibrary 'org.apache.http.legacy'
     defaultConfig {
         applicationId "uw.ytchang.vaguard"
         minSdkVersion 26
@@ -128,4 +129,11 @@ dependencies {
     compile 'com.google.android.gms:play-services:9.4.0'
 
     testCompile 'org.mockito:mockito-core:2.2.28'
+
+//    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3'
+//    compile group: 'org.apache.httpcomponents' , name: 'httpclient-android' , version: '4.3.5.1'
+    compile 'org.apache.httpcomponents:httpclient-android:4.3.5.1'
+    compile('org.apache.httpcomponents:httpmime:4.3') {
+        exclude module: "httpclient"
+    }
 }

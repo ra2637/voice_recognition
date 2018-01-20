@@ -58,7 +58,7 @@ public class GoogleSpeechRecognizerManager {
             mStreamingClient = new StreamingRecognizeClient(channel, AudioRecorderManager.RECORDER_SAMPLERATE);
 //            mSyncClient = new SyncRecognizeClient(channel, AudioRecorderManager.RECORDER_SAMPLERATE);
         } catch (Exception e) {
-            Log.e(MainActivity.class.getSimpleName(), "Error", e);
+            Log.e(GoogleSpeechRecognizerManager.class.getSimpleName(), "Error", e);
         }
     }
 

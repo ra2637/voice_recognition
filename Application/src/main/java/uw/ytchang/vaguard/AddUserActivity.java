@@ -19,6 +19,7 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
     private EditText user_name;
     private TextView guide_line;
     private AlizeVoiceRecognizerManager alizeVoiceRecognizerManager;
+    private AzureVoiceRecognizerManager azureVoiceRecognizerManager;
     private AudioRecorderManager audioRecorderManager;
 
 
@@ -30,6 +31,7 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
         setClickListeners();
 
         alizeVoiceRecognizerManager = new AlizeVoiceRecognizerManager(getBaseContext());
+        azureVoiceRecognizerManager = new AzureVoiceRecognizerManager(getBaseContext());
     }
 
     private void findViews() {
@@ -78,6 +80,8 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
                     // TODO: stop recording process and create user in alize
                     audioRecorderManager.stopRecording();
                     alizeVoiceRecognizerManager.addSpeaker(speakerName, outputFile);
+                    AzureVoiceRecognizerManager.AddSpeaker addSpeaker = azureVoiceRecognizerManager.new AddSpeaker();
+                    addSpeaker.execute(speakerName, outputFile);
                     user_name.setFreezesText(false);
                     user_name.setText("");
                     guide_line.setText("Added user "+ speakerName + " to the system.");

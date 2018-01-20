@@ -29,6 +29,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Button vaguard_listen_btn, add_user_btn;
     private AndroidSpeechRecognizerManager androidSpeechRecognizerManager;
     private AlizeVoiceRecognizerManager alizeVoiceRecognizerManager;
+    private AzureVoiceRecognizerManager azureVoiceRecognizerManager;
     private static AudioRecorderManager audioRecorderManager;
     private String recordVoicePath, speaker;
     private final int RECORD_TIME =  5*1000;
@@ -43,6 +44,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setClickListeners();
 
         alizeVoiceRecognizerManager = new AlizeVoiceRecognizerManager(getBaseContext());
+        azureVoiceRecognizerManager = new AzureVoiceRecognizerManager(getBaseContext());
 
     }
 
