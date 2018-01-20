@@ -31,7 +31,7 @@ public class AlizeVoiceRecognizerManager {
 
     private static SimpleSpkDetSystem alizeSystem;
 
-    private String speakerBaseFolder = "speakers";
+    private String speakerBaseFolder = "alize/speakers";
     private static String speakersAudioFolder;
 //    private static ArrayList<String> speakers;
 
