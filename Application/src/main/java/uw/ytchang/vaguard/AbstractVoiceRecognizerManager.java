@@ -29,14 +29,6 @@ public abstract class AbstractVoiceRecognizerManager {
     protected Context context;
     private HashMap<String, String> id_name_map;
 
-    public enum Actions {
-        ADD_SPEAKER,
-        IDENTIFY_SPEAKER,
-        VERIFY_SPEAKER,
-        GET_SPEAKER_ID,
-        DELETE_SPEAKER
-    };
-
     public AbstractVoiceRecognizerManager(Context context, String speakerBaseFolder){
         Log.d(TAG, "init voice recognizer");
 
@@ -92,10 +84,10 @@ public abstract class AbstractVoiceRecognizerManager {
             BufferedWriter writer;
 
             if(file.createNewFile()){ // file is new
-                writer = new BufferedWriter(new FileWriter(file));
+                writer = new BufferedWriter(new FileWriter(file, true));
                 writer.write(line);
             }else{ // file is existed
-                writer = new BufferedWriter(new FileWriter(file));
+                writer = new BufferedWriter(new FileWriter(file, true));
                 if(file.length() > 0){
                     writer.newLine();
                 }
@@ -136,54 +128,13 @@ public abstract class AbstractVoiceRecognizerManager {
     protected abstract JSONObject getSpeakerId(String speakerName);
 
 
-    /**
-     *
-     * @param strings
-     * @return JSONObject with the structure: {"status":"success/fail", "data":""}
-     */
-//    @Override
-//    protected JSONObject doInBackground(String... strings) {
-//        Actions action = Actions.valueOf(strings[0]);
-//        switch (action){
-//            case ADD_SPEAKER:
-//                if(strings.length != 3) {
-//                    return null;
-//                }
-//                return addSpeaker(strings[1], strings[2]);
-//            case IDENTIFY_SPEAKER:
-//                if(strings.length != 2) {
-//                    return null;
-//                }
-//                return identifySpeaker(strings[1]);
-//            case VERIFY_SPEAKER:
-//                if(strings.length != 3) {
-//                    return null;
-//                }
-//                return verifySpeaker(strings[1], strings[2]);
-//            case GET_SPEAKER_ID:
-//                if(strings.length != 2) {
-//                    return null;
-//                }
-//                return getSpeakerId(strings[1]);
-//
-//            case DELETE_SPEAKER:
-//                if(strings.length != 2) {
-//                    return null;
-//                }
-//                return deleteSpeaker(strings[1]);
-//            default:
-//                Log.d(TAG, "Unrecognized action: "+action.toString());
-//                return null;
-//        }
-//    }
-
     public class AddSpeaker extends AsyncTask<String, Void, JSONObject> {
         @Override
         protected JSONObject doInBackground(String... strings) {
-            if(strings.length != 3) {
+            if(strings.length != 2) {
                 return null;
             }
-            return addSpeaker(strings[1], strings[2]);
+            return addSpeaker(strings[0], strings[1]);
         }
 
         @Override
@@ -195,10 +146,10 @@ public abstract class AbstractVoiceRecognizerManager {
     public class IdentifySpeaker extends AsyncTask<String, Void, JSONObject> {
         @Override
         protected JSONObject doInBackground(String... strings) {
-            if(strings.length != 2) {
+            if(strings.length != 1) {
                     return null;
                 }
-                return identifySpeaker(strings[1]);
+                return identifySpeaker(strings[0]);
         }
 
         @Override
@@ -210,10 +161,10 @@ public abstract class AbstractVoiceRecognizerManager {
     public class VerifySpeaker extends AsyncTask<String, Void, JSONObject> {
         @Override
         protected JSONObject doInBackground(String... strings) {
-            if(strings.length != 3) {
+            if(strings.length != 2) {
                 return null;
             }
-            return verifySpeaker(strings[1], strings[2]);
+            return verifySpeaker(strings[0], strings[1]);
         }
 
         @Override

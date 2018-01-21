@@ -246,7 +246,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     String wavOutputFile = getBaseContext().getFilesDir().getPath()+"/test.wav";
                     audioRecorderManager.createWavFile(audioRecorderManager.getOutputFileName(), wavOutputFile);
                     AbstractVoiceRecognizerManager.IdentifySpeaker identifySpeakerTask = azureVoiceRecognizerManager.new IdentifySpeaker();
-                    identifySpeakerTask.execute(AbstractVoiceRecognizerManager.Actions.IDENTIFY_SPEAKER.toString(), wavOutputFile);
+                    identifySpeakerTask.execute(wavOutputFile);
                     try {
                         Log.d(TAG, "identifyTask status: "+identifySpeakerTask.getStatus());
                         JSONObject result = identifySpeakerTask.get();
@@ -276,7 +276,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     String wavOutputFile = getBaseContext().getFilesDir().getPath()+"/test.wav";
                     audioRecorderManager.createWavFile(audioRecorderManager.getOutputFileName(), wavOutputFile);
                     AbstractVoiceRecognizerManager.VerifySpeaker verifySpeakerTask = azureVoiceRecognizerManager.new VerifySpeaker();
-                    verifySpeakerTask.execute(AbstractVoiceRecognizerManager.Actions.VERIFY_SPEAKER.toString(), speakerId, wavOutputFile);
+                    verifySpeakerTask.execute(speakerId, wavOutputFile);
                     try {
                         JSONObject result = verifySpeakerTask.get();
                         if(result != null && result.getString("status").equals("success") && result.getBoolean("data")){

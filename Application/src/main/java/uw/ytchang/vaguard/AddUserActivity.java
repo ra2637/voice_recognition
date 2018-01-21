@@ -85,7 +85,7 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
                     audioRecorderManager.createWavFile(outputFile, wavOutputFile);
 
                     AbstractVoiceRecognizerManager.AddSpeaker addSpeakerTask = azureVoiceRecognizerManager.new AddSpeaker();
-                    addSpeakerTask.execute(AbstractVoiceRecognizerManager.Actions.ADD_SPEAKER.toString(), speakerName, wavOutputFile);
+                    addSpeakerTask.execute(speakerName, wavOutputFile);
 
                     try {
                         JSONObject result = addSpeakerTask.get();
