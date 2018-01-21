@@ -138,11 +138,6 @@ public class AudioRecorderManager {
         long byteRate = RECORDER_BPP * RECORDER_SAMPLERATE * channels / 8;
         byte[] data = new byte[RECORDER_AUDIO_BUFFER_SIZE];
 
-        File outFile = new File(outFilename);
-        if(outFile.exists()){
-            outFile.delete();
-        }
-
         try {
             in = new FileInputStream(inFilename);
             out = new FileOutputStream(outFilename);

@@ -19,7 +19,7 @@ import java.util.Set;
  * Created by ra2637 on 1/19/18.
  */
 
-public abstract class AbstractVoiceRecognizerManager extends AsyncTask<String, Void, JSONObject>{
+public abstract class AbstractVoiceRecognizerManager {
     private final String TAG = this.getClass().getSimpleName();
     private final String DB_FILE = "id_name.db";
 
@@ -141,39 +141,85 @@ public abstract class AbstractVoiceRecognizerManager extends AsyncTask<String, V
      * @param strings
      * @return JSONObject with the structure: {"status":"success/fail", "data":""}
      */
-    @Override
-    protected JSONObject doInBackground(String... strings) {
-        Actions action = Actions.valueOf(strings[0]);
-        switch (action){
-            case ADD_SPEAKER:
-                if(strings.length != 3) {
-                    return null;
-                }
-                return addSpeaker(strings[1], strings[2]);
-            case IDENTIFY_SPEAKER:
-                if(strings.length != 2) {
+//    @Override
+//    protected JSONObject doInBackground(String... strings) {
+//        Actions action = Actions.valueOf(strings[0]);
+//        switch (action){
+//            case ADD_SPEAKER:
+//                if(strings.length != 3) {
+//                    return null;
+//                }
+//                return addSpeaker(strings[1], strings[2]);
+//            case IDENTIFY_SPEAKER:
+//                if(strings.length != 2) {
+//                    return null;
+//                }
+//                return identifySpeaker(strings[1]);
+//            case VERIFY_SPEAKER:
+//                if(strings.length != 3) {
+//                    return null;
+//                }
+//                return verifySpeaker(strings[1], strings[2]);
+//            case GET_SPEAKER_ID:
+//                if(strings.length != 2) {
+//                    return null;
+//                }
+//                return getSpeakerId(strings[1]);
+//
+//            case DELETE_SPEAKER:
+//                if(strings.length != 2) {
+//                    return null;
+//                }
+//                return deleteSpeaker(strings[1]);
+//            default:
+//                Log.d(TAG, "Unrecognized action: "+action.toString());
+//                return null;
+//        }
+//    }
+
+    public class AddSpeaker extends AsyncTask<String, Void, JSONObject> {
+        @Override
+        protected JSONObject doInBackground(String... strings) {
+            if(strings.length != 3) {
+                return null;
+            }
+            return addSpeaker(strings[1], strings[2]);
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject result) {
+            Log.d(TAG, "RESULT = " + result);
+        }
+    }
+
+    public class IdentifySpeaker extends AsyncTask<String, Void, JSONObject> {
+        @Override
+        protected JSONObject doInBackground(String... strings) {
+            if(strings.length != 2) {
                     return null;
                 }
                 return identifySpeaker(strings[1]);
-            case VERIFY_SPEAKER:
-                if(strings.length != 3) {
-                    return null;
-                }
-                return verifySpeaker(strings[1], strings[2]);
-            case GET_SPEAKER_ID:
-                if(strings.length != 2) {
-                    return null;
-                }
-                return getSpeakerId(strings[1]);
+        }
 
-            case DELETE_SPEAKER:
-                if(strings.length != 2) {
-                    return null;
-                }
-                return deleteSpeaker(strings[1]);
-            default:
-                Log.d(TAG, "Unrecognized action: "+action.toString());
-                return null;
+        @Override
+        protected void onPostExecute(JSONObject result) {
+            Log.d(TAG, "RESULT = " + result+", status = "+this.getStatus());
         }
     }
+
+    public class VerifySpeaker extends AsyncTask<String, Void, JSONObject> {
+        @Override
+        protected JSONObject doInBackground(String... strings) {
+            if(strings.length != 3) {
+                return null;
+            }
+            return verifySpeaker(strings[1], strings[2]);
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject result) {
+            Log.d(TAG, "RESULT = " + result+", status = "+this.getStatus());
+        }
+    }
+
 }

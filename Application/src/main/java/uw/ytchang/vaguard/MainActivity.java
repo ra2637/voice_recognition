@@ -2,6 +2,7 @@ package uw.ytchang.vaguard;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
@@ -244,9 +245,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                     String wavOutputFile = getBaseContext().getFilesDir().getPath()+"/test.wav";
                     audioRecorderManager.createWavFile(audioRecorderManager.getOutputFileName(), wavOutputFile);
-                    azureVoiceRecognizerManager.execute(AbstractVoiceRecognizerManager.Actions.IDENTIFY_SPEAKER.toString(), wavOutputFile);
+                    AbstractVoiceRecognizerManager.IdentifySpeaker identifySpeakerTask = azureVoiceRecognizerManager.new IdentifySpeaker();
+                    identifySpeakerTask.execute(AbstractVoiceRecognizerManager.Actions.IDENTIFY_SPEAKER.toString(), wavOutputFile);
                     try {
-                        JSONObject result = azureVoiceRecognizerManager.get();
+                        Log.d(TAG, "identifyTask status: "+identifySpeakerTask.getStatus());
+                        JSONObject result = identifySpeakerTask.get();
+                        Log.d(TAG, "after identifyTask get status: "+identifySpeakerTask.getStatus());
                         if(result != null && result.getString("status").equals("success")){
                             speakerId = result.getString("data");
                             runProgress(State.CHALLENGE);
@@ -271,9 +275,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                     String wavOutputFile = getBaseContext().getFilesDir().getPath()+"/test.wav";
                     audioRecorderManager.createWavFile(audioRecorderManager.getOutputFileName(), wavOutputFile);
-                    azureVoiceRecognizerManager.execute(AbstractVoiceRecognizerManager.Actions.VERIFY_SPEAKER.toString(), speakerId, wavOutputFile);
+                    AbstractVoiceRecognizerManager.VerifySpeaker verifySpeakerTask = azureVoiceRecognizerManager.new VerifySpeaker();
+                    verifySpeakerTask.execute(AbstractVoiceRecognizerManager.Actions.VERIFY_SPEAKER.toString(), speakerId, wavOutputFile);
                     try {
-                        JSONObject result = azureVoiceRecognizerManager.get();
+                        JSONObject result = verifySpeakerTask.get();
                         if(result != null && result.getString("status").equals("success") && result.getBoolean("data")){
                             checkContent(challenge);
                         } else{

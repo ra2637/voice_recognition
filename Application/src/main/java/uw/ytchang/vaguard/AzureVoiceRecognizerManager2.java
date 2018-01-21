@@ -3,8 +3,6 @@ package uw.ytchang.vaguard;
 import android.content.Context;
 import android.util.Log;
 
-import com.google.api.client.json.Json;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -36,7 +34,7 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
     private final String AZURE_API_URI = "https://westus.api.cognitive.microsoft.com/spid/v1.0";
     private static String speakerBaseFolder = "azure";
 
-    private HttpClient httpClient;
+//    private CloseableHttpClient httpClient;
     private String credentialString;
 
     public AzureVoiceRecognizerManager2(Context context) {
@@ -52,9 +50,6 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
     public boolean initVoiceRecognizer() {
         Log.d(TAG, "init voice recognizer");
         try {
-            if(httpClient == null){
-                httpClient = HttpClients.createDefault();
-            }
             InputStream stream = context.getAssets().open(AZURE_CREDENTIAL_FILE);
             BufferedReader dataInputStream = new BufferedReader(new InputStreamReader(stream));
             if((credentialString=dataInputStream.readLine()) == null){
@@ -106,6 +101,7 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
             StringEntity reqEntity = new StringEntity("{\"locale\":\"en-us\"}");
             request.setEntity(reqEntity);
 
+            HttpClient httpClient = HttpClients.createDefault();
             HttpResponse response = httpClient.execute(request);
             HttpEntity entity = response.getEntity();
 
@@ -142,6 +138,7 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
             FileEntity reqEntity = new FileEntity(new File(audioPath), "multipart/form");
             request.setEntity(reqEntity);
 
+            HttpClient httpClient = HttpClients.createDefault();
             HttpResponse response = httpClient.execute(request);
             HttpEntity entity = response.getEntity();
 
@@ -163,21 +160,6 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
                     Log.d(TAG, "enroll failed");
                     return false;
                 }
-
-
-//                BufferedReader dataInputStream = new BufferedReader(new InputStreamReader(entity.getContent()));
-//                StringBuilder reponseStr = new StringBuilder();
-//                String line;
-//                while((line = dataInputStream.readLine()) != null){
-//                    reponseStr.append(line+"\n");
-//                }
-//                Log.d(TAG, reponseStr.toString());
-//                Log.d(TAG+"/Enroll response header:", String.valueOf(response.getStatusLine().getStatusCode()));
-//                if(response.getStatusLine().getStatusCode()/200 == 1){
-//                    return true;
-//                } else{
-//                    Log.d(TAG, "enroll failed: "+reponseStr);
-//                }
             }
         } catch (Exception e) {
             Log.d(TAG, e.getMessage());
@@ -187,13 +169,14 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
 
     private JSONObject checkAzureOperation(String url){
         try{
-            URIBuilder builder = new URIBuilder(url);
 
-            HttpGet request = new HttpGet(builder.build());
+            HttpGet request = new HttpGet(url);
             request.setHeader("Content-Type", "application/json");
             request.setHeader("Ocp-Apim-Subscription-Key", credentialString);
 
+            HttpClient httpClient = HttpClients.createDefault();
             HttpResponse response = httpClient.execute(request);
+
             if(response.getStatusLine().getStatusCode() == HttpStatus.SC_OK){
                 HttpEntity entity = response.getEntity();
 
@@ -259,6 +242,7 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
             FileEntity reqEntity = new FileEntity(new File(audioPath), "application/octet-stream");
             request.setEntity(reqEntity);
 
+            HttpClient httpClient = HttpClients.createDefault();
             HttpResponse response = httpClient.execute(request);
             HttpEntity entity = response.getEntity();
 
@@ -272,12 +256,15 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
                         tryTimes--;
                         JSONObject result = checkAzureOperation(operationUri);
                         final String nonMatchId = "00000000-0000-0000-0000-000000000000";
-                        if(result.getString("status").equals("succeeded") &&
-                                !result.getJSONObject("processingResult").getString("identifiedProfileId").equals(nonMatchId)){
-                            JSONObject newResult = new JSONObject();
-                            newResult.put("status", "success");
-                            newResult.put("data", result.getJSONObject("processingResult").getString("identifiedProfileId"));
-                            return newResult;
+                        if(result.getString("status").equals("succeeded")){
+                            if(result.getJSONObject("processingResult").getString("identifiedProfileId").equals(nonMatchId)){
+                                return null;
+                            }else{
+                                JSONObject newResult = new JSONObject();
+                                newResult.put("status", "success");
+                                newResult.put("data", result.getJSONObject("processingResult").getString("identifiedProfileId"));
+                                return newResult;
+                            }
                         }
                     }
                 } else{
@@ -287,6 +274,7 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
         } catch (Exception e) {
             Log.d(TAG, e.getMessage());
         }
+
         return null;
     }
 
@@ -300,10 +288,12 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
         return null;
     }
 
-    @Override
-    protected void onPostExecute(JSONObject result)
-    {
-        Log.d(TAG, "RESULT = " + result);
+//    @Override
+//    protected void onPostExecute(JSONObject result)
+//    {
+//        Log.d(TAG, "RESULT = " + result);
+//
+//    }
 
-    }
+
 }
