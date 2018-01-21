@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -11,12 +13,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * Created by ra2637 on 1/19/18.
  */
 
-public abstract class AbstractVoiceRecognizerManager extends AsyncTask<String, Void, Boolean>{
+public abstract class AbstractVoiceRecognizerManager extends AsyncTask<String, Void, JSONObject>{
     private final String TAG = this.getClass().getSimpleName();
     private final String DB_FILE = "id_name.db";
 
@@ -28,6 +31,7 @@ public abstract class AbstractVoiceRecognizerManager extends AsyncTask<String, V
 
     public enum Actions {
         ADD_SPEAKER,
+        IDENTIFY_SPEAKER,
         VERIFY_SPEAKER,
         GET_SPEAKER_ID,
         DELETE_SPEAKER
@@ -99,6 +103,8 @@ public abstract class AbstractVoiceRecognizerManager extends AsyncTask<String, V
             }
             writer.flush();
             writer.close();
+
+            id_name_map.put(speakerId, speakerName);
             return true;
         } catch (IOException e){
             Log.d(TAG, e.getStackTrace().toString());
@@ -114,43 +120,60 @@ public abstract class AbstractVoiceRecognizerManager extends AsyncTask<String, V
         return id_name_map.containsValue(speakerName);
     }
 
-    protected abstract boolean addSpeaker(String speakerName, String audioPath);
-    protected abstract boolean verifySpeaker(String speakerId, String audioPath);
-    protected abstract String getSpeakerId(String speakerName);
-    protected abstract boolean deleteSpeaker(String speakerId);
+    public Set<String> getSpekaerIds(){
+        return id_name_map.keySet();
+    }
+
+    public String getSpeakerName(String speakerId){
+        return id_name_map.get(speakerId);
+    }
 
 
+    protected abstract JSONObject addSpeaker(String speakerName, String audioPath);
+    protected abstract JSONObject identifySpeaker(String audioPath);
+    protected abstract JSONObject verifySpeaker(String speakerId, String audioPath);
+    protected abstract JSONObject deleteSpeaker(String speakerId);
+    protected abstract JSONObject getSpeakerId(String speakerName);
+
+
+    /**
+     *
+     * @param strings
+     * @return JSONObject with the structure: {"status":"success/fail", "data":""}
+     */
     @Override
-    protected Boolean doInBackground(String... strings) {
+    protected JSONObject doInBackground(String... strings) {
         Actions action = Actions.valueOf(strings[0]);
         switch (action){
             case ADD_SPEAKER:
                 if(strings.length != 3) {
-                    return false;
+                    return null;
                 }
                 return addSpeaker(strings[1], strings[2]);
+            case IDENTIFY_SPEAKER:
+                if(strings.length != 2) {
+                    return null;
+                }
+                return identifySpeaker(strings[1]);
             case VERIFY_SPEAKER:
                 if(strings.length != 3) {
-                    return false;
+                    return null;
                 }
                 return verifySpeaker(strings[1], strings[2]);
             case GET_SPEAKER_ID:
                 if(strings.length != 2) {
-                    return false;
+                    return null;
                 }
-                 if(getSpeakerId(strings[1]) == null) {
-                    return false;
-                 } else{
-                    return true;
-                 }
+                return getSpeakerId(strings[1]);
+
             case DELETE_SPEAKER:
                 if(strings.length != 2) {
-                    return false;
+                    return null;
                 }
                 return deleteSpeaker(strings[1]);
             default:
                 Log.d(TAG, "Unrecognized action: "+action.toString());
-                return false;
+                return null;
         }
     }
 }

@@ -8,6 +8,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.json.JSONObject;
+
 import java.util.concurrent.ExecutionException;
 
 
@@ -84,8 +86,8 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
                     azureVoiceRecognizerManager.execute(AbstractVoiceRecognizerManager.Actions.ADD_SPEAKER.toString(), speakerName, wavOutputFile);
 
                     try {
-                        Boolean result = azureVoiceRecognizerManager.get();
-                        if(result){
+                        JSONObject result = azureVoiceRecognizerManager.get();
+                        if(result != null){
                             user_name.setFreezesText(false);
                             user_name.setText("");
                             guide_line.setText("Added user "+ speakerName + " to the system.");

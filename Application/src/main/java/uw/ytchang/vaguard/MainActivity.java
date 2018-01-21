@@ -9,13 +9,16 @@ import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 
 
 public class MainActivity extends Activity implements View.OnClickListener {
@@ -29,10 +32,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Button vaguard_listen_btn, add_user_btn;
     private AndroidSpeechRecognizerManager androidSpeechRecognizerManager;
     private AlizeVoiceRecognizerManager alizeVoiceRecognizerManager;
-    private AzureVoiceRecognizerManager azureVoiceRecognizerManager;
+    private AzureVoiceRecognizerManager2 azureVoiceRecognizerManager;
     private static AudioRecorderManager audioRecorderManager;
 //    private String recordVoicePath,
-    private String speaker;
+    private String speakerId;
     private final int RECORD_TIME =  5*1000;
 
     private TextToSpeech ttobj;
@@ -45,7 +48,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setClickListeners();
 
         alizeVoiceRecognizerManager = new AlizeVoiceRecognizerManager(getBaseContext());
-        azureVoiceRecognizerManager = new AzureVoiceRecognizerManager(getBaseContext());
+        azureVoiceRecognizerManager = new AzureVoiceRecognizerManager2(getBaseContext());
 
     }
 
@@ -117,7 +120,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 Log.d(TAG, "CHALLENGE state");
                 int challengeInt = getRandomNumber();
                 String challeng = String.valueOf(challengeInt);
-                guide_line.setText("Hi "+ speaker);
+                guide_line.setText("Hi "+ azureVoiceRecognizerManager.getSpeakerName(speakerId));
                 checkChallenge(challeng, State.CHALLENGE);
                 break;
             case STOP:
@@ -138,7 +141,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 Log.d(TAG, "REJECT_SPEAKER state");
                 vaguard_listen_btn.setText(getString(R.string.vaguard_start));
                 guide_line.setText("Failed Speaker Verification!");
-                result_tv.setText("You are not "+ speaker + "\n");
+                result_tv.setText("You are not "+ azureVoiceRecognizerManager.getSpeakerName(speakerId) + "\n");
                 break;
             case REJECT_RESPONSE:
                 Log.d(TAG, "REJECT_RESPONSE state");
@@ -232,18 +235,57 @@ public class MainActivity extends Activity implements View.OnClickListener {
             Log.d(TAG, "file is closed: "+ audioRecorderManager.isFileClosed() );
             if(audioRecorderManager.isFileClosed()){
                 if(state.equals(State.COMMAND)) {
-                    if((speaker = alizeVoiceRecognizerManager.identifySpeaker(audioRecorderManager.getOutputFileName())) != null){
-                        runProgress(State.CHALLENGE);
-                    }else{
-                        speaker = null;
-                        runProgress(State.USER_NOT_EXIST);
+//                    if((speakerId = alizeVoiceRecognizerManager.identifySpeaker(audioRecorderManager.getOutputFileName())) != null){
+//                        runProgress(State.CHALLENGE);
+//                    }else{
+//                        speakerId = null;
+//                        runProgress(State.USER_NOT_EXIST);
+//                    }
+
+                    String wavOutputFile = getBaseContext().getFilesDir().getPath()+"/test.wav";
+                    audioRecorderManager.createWavFile(audioRecorderManager.getOutputFileName(), wavOutputFile);
+                    azureVoiceRecognizerManager.execute(AbstractVoiceRecognizerManager.Actions.IDENTIFY_SPEAKER.toString(), wavOutputFile);
+                    try {
+                        JSONObject result = azureVoiceRecognizerManager.get();
+                        if(result != null && result.getString("status").equals("success")){
+                            speakerId = result.getString("data");
+                            runProgress(State.CHALLENGE);
+                        } else{
+                            speakerId = null;
+                            runProgress(State.USER_NOT_EXIST);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 }else if(state.equals(State.CHALLENGE)){
-                    if(alizeVoiceRecognizerManager.verifySpeaker(speaker, audioRecorderManager.getOutputFileName())){
-                        checkContent(challenge);
-                    }else{
-                        Log.d(TAG, "voiceprint is not match: "+speaker);
-                        runProgress(State.REJECT_SPEAKER);
+//                    if(alizeVoiceRecognizerManager.verifySpeaker(speakerId, audioRecorderManager.getOutputFileName())){
+//                        checkContent(challenge);
+//                    }else{
+//                        Log.d(TAG, "voiceprint is not match: "+speakerId);
+//                        runProgress(State.REJECT_SPEAKER);
+//                    }
+
+                    String wavOutputFile = getBaseContext().getFilesDir().getPath()+"/test.wav";
+                    audioRecorderManager.createWavFile(audioRecorderManager.getOutputFileName(), wavOutputFile);
+                    azureVoiceRecognizerManager.execute(AbstractVoiceRecognizerManager.Actions.VERIFY_SPEAKER.toString(), speakerId, wavOutputFile);
+                    try {
+                        JSONObject result = azureVoiceRecognizerManager.get();
+                        if(result != null && result.getString("status").equals("success") && result.getBoolean("data")){
+                            checkContent(challenge);
+                        } else{
+                            Log.d(TAG, "voiceprint is not match: "+speakerId);
+                            runProgress(State.REJECT_SPEAKER);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 }
                 break;

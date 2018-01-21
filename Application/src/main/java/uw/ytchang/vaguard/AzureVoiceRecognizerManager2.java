@@ -3,6 +3,8 @@ package uw.ytchang.vaguard;
 import android.content.Context;
 import android.util.Log;
 
+import com.google.api.client.json.Json;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -13,7 +15,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -21,7 +23,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.util.TimerTask;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by ra2637 on 1/19/18.
@@ -68,20 +71,26 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
     }
 
     @Override
-    public boolean addSpeaker(String speakerName, String audioPath) {
+    public JSONObject addSpeaker(String speakerName, String audioPath) {
         String profileId = createSpeakerProfileInAzure();
-        if(profileId == null) { return false; }
+        if(profileId == null) { return null; }
 
         if(isSpeakerIdExisted(profileId) || isSpeakerNameExisted(speakerName)){
             Log.d(TAG, "SpeakerId or speakerName is existed. speakerId: "+profileId+
                             "speakerName: "+speakerName);
-            return false;
+            return null;
         }
 
-        if(enrollSpeakerInAzure(profileId, audioPath)){
-           return this.saveIdName(profileId, speakerName);
+        if(enrollSpeakerInAzure(profileId, audioPath) && this.saveIdName(profileId, speakerName)){
+            JSONObject result = new JSONObject();
+            try {
+                result.put("status", "success");
+                return result;
+            } catch (JSONException e) {
+                Log.d(TAG, e.getMessage());
+            }
         }
-        return false;
+        return null;
     }
 
     private String createSpeakerProfileInAzure(){
@@ -200,32 +209,99 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
                     return jsonObj;
                 }
             }
-
         } catch (Exception e){
             Log.d(TAG, e.getMessage());
         }
-
-
         return null;
     }
 
     @Override
-    public boolean verifySpeaker(String speakerId, String audioPath) {
-        return false;
+    public JSONObject verifySpeaker(String speakerId, String audioPath) {
+        JSONObject response = identifySpeaker(audioPath);
+        JSONObject result = null;
+
+        try {
+            if(response == null){
+                return null;
+            }
+
+            if(!response.get("data").equals(speakerId)){
+                return null;
+            }
+
+            result = new JSONObject();
+            result.put("status", "success");
+            result.put("data", true);
+        } catch (JSONException e) {
+            Log.d(TAG, e.getMessage());
+        }
+        return result;
     }
 
     @Override
-    public String getSpeakerId(String speakerName) {
+    public JSONObject identifySpeaker(String audioPath){
+        try{
+            Set<String> speakerIdSet = this.getSpekaerIds();
+            String identificationProfileIds = speakerIdSet.stream().collect(Collectors.joining(","));
+            Log.d(TAG, "speakerIds: "+identificationProfileIds);
+            URIBuilder builder = new URIBuilder(AZURE_API_URI + "/identify");
+
+            builder.setParameter("identificationProfileIds", identificationProfileIds);
+            builder.setParameter("shortAudio", "true");
+
+            URI uri = builder.build();
+            HttpPost request = new HttpPost(uri);
+//            request.setHeader("Content-Type", "multipart/form-data");
+            request.setHeader("Content-Type", "application/octet-stream");
+            request.setHeader("Ocp-Apim-Subscription-Key", credentialString);
+
+            // Request body
+            FileEntity reqEntity = new FileEntity(new File(audioPath), "application/octet-stream");
+            request.setEntity(reqEntity);
+
+            HttpResponse response = httpClient.execute(request);
+            HttpEntity entity = response.getEntity();
+
+            if (entity != null) {
+                if(response.getStatusLine().getStatusCode() == 202){
+                    String operationUri = response.getFirstHeader("Operation-Location").getValue();
+                    Log.d(TAG, "operation location value: "+operationUri);
+                    int tryTimes = 3;
+                    while(tryTimes>=0){
+                        Thread.sleep(1000);
+                        tryTimes--;
+                        JSONObject result = checkAzureOperation(operationUri);
+                        final String nonMatchId = "00000000-0000-0000-0000-000000000000";
+                        if(result.getString("status").equals("succeeded") &&
+                                !result.getJSONObject("processingResult").getString("identifiedProfileId").equals(nonMatchId)){
+                            JSONObject newResult = new JSONObject();
+                            newResult.put("status", "success");
+                            newResult.put("data", result.getJSONObject("processingResult").getString("identifiedProfileId"));
+                            return newResult;
+                        }
+                    }
+                } else{
+                    Log.d(TAG, "verification failed");
+                }
+            }
+        } catch (Exception e) {
+            Log.d(TAG, e.getMessage());
+        }
         return null;
     }
 
     @Override
-    public boolean deleteSpeaker(String speakerId) {
-        return false;
+    public JSONObject getSpeakerId(String speakerName) {
+        return null;
     }
 
     @Override
-    protected void onPostExecute(Boolean result)
+    public JSONObject deleteSpeaker(String speakerId) {
+        return null;
+    }
+
+    @Override
+    protected void onPostExecute(JSONObject result)
     {
         Log.d(TAG, "RESULT = " + result);
 
