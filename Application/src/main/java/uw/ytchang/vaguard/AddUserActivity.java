@@ -17,7 +17,7 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
     private static final String TAG = "AddUserActivity";
     private Button record_btn;
     private EditText user_name;
-    private TextView guide_line;
+    private TextView error_line, guide_line;
     private AlizeVoiceRecognizerManager alizeVoiceRecognizerManager;
     private AzureVoiceRecognizerManager2 azureVoiceRecognizerManager;
     private AudioRecorderManager audioRecorderManager;
@@ -39,7 +39,9 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
         record_btn.setText(getString(R.string.start_recording));
         user_name = (EditText) findViewById(R.id.user_name);
         user_name.setText("");
+        error_line = (TextView) findViewById(R.id.add_user_error_line);
         guide_line = (TextView) findViewById(R.id.add_user_guide_line);
+        guide_line.setText("Please response \n\" 5 6 2 1 3 8 7 4 0 9 \"\n and press stop after you finished.");
     }
 
     private void setClickListeners() {
@@ -57,12 +59,12 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
                     user_name.setFreezesText(true);
                     if(!speakerName.matches("\\w+")){
                         Log.d(TAG, "Name can only contains A-Z, a-z and digits.");
-                        guide_line.setText("Name can only contains A-Z, a-z and digits.");
+                        error_line.setText("Name can only contains A-Z, a-z and digits.");
                         user_name.setFreezesText(false);
                         return;
                     }
                     if(alizeVoiceRecognizerManager.hasSpeaker(speakerName)){
-                        guide_line.setText("User: "+speakerName+ " is existed.");
+                        error_line.setText(speakerName+ " is existed.");
                         user_name.setFreezesText(false);
                         return;
                     }
@@ -73,9 +75,10 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
                     } else{
                         audioRecorderManager.setOutputFileName(outputFile);
                     }
-                    guide_line.setText("Please response \" 5 6 2 1 3 8 7 4 0 9 \" and press stop after you finished.");
+
                     audioRecorderManager.startRecording();
                     record_btn.setText(getString(R.string.stop_recording));
+                    error_line.setText("");
                 }else{
                     // TODO: stop recording process and create user in alize
                     audioRecorderManager.stopRecording();
