@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.json.JSONObject;
@@ -18,6 +19,7 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
     private Button record_btn;
     private EditText user_name;
     private TextView error_line, guide_line;
+    private ProgressBar spinner;
     private AlizeVoiceRecognizerManager alizeVoiceRecognizerManager;
     private AzureVoiceRecognizerManager2 azureVoiceRecognizerManager;
     private AudioRecorderManager audioRecorderManager;
@@ -41,7 +43,10 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
         user_name.setText("");
         error_line = (TextView) findViewById(R.id.add_user_error_line);
         guide_line = (TextView) findViewById(R.id.add_user_guide_line);
-        guide_line.setText("Please response \n\" 5 6 2 1 3 8 7 4 0 9 \"\n and press stop after you finished.");
+        spinner = (ProgressBar) findViewById(R.id.progress_loader);
+        spinner.setVisibility(View.GONE);
+
+        guide_line.setText("Please response \n\n\" 5 6 2 1 3 8 7 4 0 9 \"\n\n and press stop after you finished.");
     }
 
     private void setClickListeners() {
@@ -81,8 +86,9 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
                     error_line.setText("");
                 }else{
                     // TODO: stop recording process and create user in alize
+                    spinner.setVisibility(View.VISIBLE);
+                    record_btn.setEnabled(false);
                     audioRecorderManager.stopRecording();
-//                    alizeVoiceRecognizerManager.addSpeaker(speakerName, outputFile);
 
                     String wavOutputFile = azureVoiceRecognizerManager.getSpeakersAudioFolder()+"/"+speakerName+".wav";
                     audioRecorderManager.createWavFile(outputFile, wavOutputFile);
@@ -98,10 +104,12 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
                             guide_line.setText("Added user "+ speakerName + " to the system.");
                             record_btn.setText(getString(R.string.start_recording));
                         }
-                    } catch (InterruptedException e) {
+                    } catch (InterruptedException|ExecutionException e) {
                         e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
+                        error_line.setText("Internal error.");
+                    } finally {
+                        record_btn.setEnabled(true);
+                        spinner.setVisibility(View.GONE);
                     }
 
                 }

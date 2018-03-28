@@ -35,7 +35,7 @@
         android:id="@+id/record_btn"
         android:layout_width="110dp"
         android:layout_height="76dp"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="16dp"
         android:text="Button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -49,7 +49,7 @@
         android:layout_height="41dp"
         android:layout_marginTop="8dp"
         android:textAlignment="viewStart"
-        android:textColor="#1a4067"
+        android:textColor="@color/colorAccent"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -60,7 +60,7 @@
     <TextView
         android:id="@+id/add_user_guide_line"
         android:layout_width="300dp"
-        android:layout_height="86dp"
+        android:layout_height="124dp"
         android:layout_marginTop="16dp"
         android:textAlignment="center"
         android:textColor="#1a4067"
@@ -70,4 +70,17 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/add_user_error_line" />
+
+
+    <ProgressBar
+        android:id="@+id/progress_loader"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="170dp"
+        android:layout_height="138dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+
 </android.support.constraint.ConstraintLayout>
