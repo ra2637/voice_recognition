@@ -103,15 +103,13 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
                             user_name.setText("");
                             guide_line.setText("Added user "+ speakerName + " to the system.");
                             record_btn.setText(getString(R.string.start_recording));
+                            record_btn.setEnabled(true);
+                            spinner.setVisibility(View.GONE);
                         }
                     } catch (InterruptedException|ExecutionException e) {
                         e.printStackTrace();
                         error_line.setText("Internal error.");
-                    } finally {
-                        record_btn.setEnabled(true);
-                        spinner.setVisibility(View.GONE);
                     }
-
                 }
                 break;
         }
