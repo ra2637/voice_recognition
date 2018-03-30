@@ -200,7 +200,7 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
 
     @Override
     public JSONObject verifySpeaker(String speakerId, String audioPath) {
-        JSONObject response = identifySpeaker(audioPath);
+        JSONObject response = azureIdentify(speakerId, audioPath);
         JSONObject result = null;
 
         try {
@@ -208,9 +208,9 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
                 return null;
             }
 
-            if(!response.get("data").equals(speakerId)){
-                return null;
-            }
+//            if(!response.get("data").equals(speakerId)){
+//                return null;
+//            }
 
             result = new JSONObject();
             result.put("status", "success");
@@ -223,9 +223,17 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
 
     @Override
     public JSONObject identifySpeaker(String audioPath){
+        Set<String> speakerIdSet = this.getSpekaerIds();
+        String identificationProfileIds = speakerIdSet.stream().collect(Collectors.joining(","));
+        return azureIdentify(identificationProfileIds, audioPath);
+    }
+
+    public JSONObject azureIdentify(String identificationProfileIds, String audioPath){
+        if(identificationProfileIds == null){
+            return null;
+        }
+
         try{
-            Set<String> speakerIdSet = this.getSpekaerIds();
-            String identificationProfileIds = speakerIdSet.stream().collect(Collectors.joining(","));
             Log.d(TAG, "speakerIds: "+identificationProfileIds);
             URIBuilder builder = new URIBuilder(AZURE_API_URI + "/identify");
 
@@ -234,7 +242,6 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
 
             URI uri = builder.build();
             HttpPost request = new HttpPost(uri);
-//            request.setHeader("Content-Type", "multipart/form-data");
             request.setHeader("Content-Type", "application/octet-stream");
             request.setHeader("Ocp-Apim-Subscription-Key", credentialString);
 
@@ -276,6 +283,7 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
         }
 
         return null;
+
     }
 
     @Override
@@ -294,6 +302,5 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
 //        Log.d(TAG, "RESULT = " + result);
 //
 //    }
-
 
 }
