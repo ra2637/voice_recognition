@@ -47,9 +47,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
         findViews();
         setClickListeners();
 
-//        alizeVoiceRecognizerManager = new AlizeVoiceRecognizerManager(getBaseContext());
-        azureVoiceRecognizerManager = new AzureVoiceRecognizerManager2(getBaseContext());
+        alizeVoiceRecognizerManager = new AlizeVoiceRecognizerManager(getBaseContext());
 
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        azureVoiceRecognizerManager = new AzureVoiceRecognizerManager2(getBaseContext());
     }
 
     private void findViews() {
@@ -96,11 +101,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         Button button;
         if(isFullAuthentication){
             button = (Button) vaguard_listen_btn_B;
-//            vaguard_listen_btn_A.setEnabled(false);
             MODE = "B";
         }else{
             button = (Button) vaguard_listen_btn_A;
-//            vaguard_listen_btn_B.setEnabled(false);
             MODE = "A";
         }
         if (!button.getText().equals(getString(R.string.vaguard_stop))) {
@@ -110,7 +113,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 androidSpeechRecognizerManager.destroy();
             }
             runProgress(State.TRIGGER);
-//            button.setText(getString(R.string.vaguard_stop));
             vaguard_listen_btn_A.setText(getString(R.string.vaguard_stop));
             vaguard_listen_btn_B.setText(getString(R.string.vaguard_stop));
         } else {
