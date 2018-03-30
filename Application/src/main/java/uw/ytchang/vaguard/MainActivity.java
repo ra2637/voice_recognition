@@ -2,7 +2,6 @@ package uw.ytchang.vaguard;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
@@ -30,13 +29,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private enum State {TRIGGER, COMMAND, CHALLENGE, STOP, FINISH, REJECT_SPEAKER, REJECT_RESPONSE, USER_NOT_EXIST};
 
     private TextView guide_line, result_tv;
-    private Button vaguard_listen_btn, add_user_btn;
+    private Button vaguard_listen_btn_A, vaguard_listen_btn_B, add_user_btn;
     private AndroidSpeechRecognizerManager androidSpeechRecognizerManager;
     private AlizeVoiceRecognizerManager alizeVoiceRecognizerManager;
     private AzureVoiceRecognizerManager2 azureVoiceRecognizerManager;
     private static AudioRecorderManager audioRecorderManager;
 //    private String recordVoicePath,
-    private String speakerId;
+    private String speakerId, MODE;
     private final int RECORD_TIME =  5*1000;
 
     private TextToSpeech ttobj;
@@ -48,7 +47,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         findViews();
         setClickListeners();
 
-        alizeVoiceRecognizerManager = new AlizeVoiceRecognizerManager(getBaseContext());
+//        alizeVoiceRecognizerManager = new AlizeVoiceRecognizerManager(getBaseContext());
         azureVoiceRecognizerManager = new AzureVoiceRecognizerManager2(getBaseContext());
 
     }
@@ -57,13 +56,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
         guide_line = (TextView) findViewById(R.id.add_user_guide_line);
         guide_line.setText(getString(R.string.press_button));
         result_tv = (TextView) findViewById(R.id.result_tv);
-        vaguard_listen_btn = (Button) findViewById(R.id.vaguard_listen_btn);
+        vaguard_listen_btn_A = (Button) findViewById(R.id.vaguard_listen_btn);
+        vaguard_listen_btn_B = (Button) findViewById(R.id.vaguard_listen_btn2);
         add_user_btn = (Button) findViewById(R.id.add_user_btn);
     }
 
 
     private void setClickListeners() {
-        vaguard_listen_btn.setOnClickListener(this);
+        vaguard_listen_btn_A.setOnClickListener(this);
+        vaguard_listen_btn_B.setOnClickListener(this);
         add_user_btn.setOnClickListener(this);
     }
 
@@ -74,23 +75,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             switch (v.getId()) {
                 case R.id.vaguard_listen_btn:
-                    if (vaguard_listen_btn.getText().equals(getString(R.string.vaguard_start))) {
-                        // Ready to runProgress
-                        if (androidSpeechRecognizerManager != null &&
-                                !androidSpeechRecognizerManager.ismIsListening()) {
-                            androidSpeechRecognizerManager.destroy();
-                        }
-                        runProgress(State.TRIGGER);
-                        vaguard_listen_btn.setText(getString(R.string.vaguard_stop));
-                    } else {
-                        // Ready to stop
-                        runProgress(State.STOP);
-                        if (androidSpeechRecognizerManager != null) {
-                            androidSpeechRecognizerManager.destroy();
-                            androidSpeechRecognizerManager = null;
-                        }
-                        vaguard_listen_btn.setText(getString(R.string.vaguard_start));
-                    }
+                    trigerStart(false);
+                    break;
+                case R.id.vaguard_listen_btn2:
+                    trigerStart(true);
                     break;
                 case R.id.add_user_btn:
                     // TODO: do something to train user voice for alize
@@ -101,6 +89,37 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
         } else {
             PermissionHandler.askForPermission(PermissionHandler.RECORD_AUDIO, this);
+        }
+    }
+
+    private void trigerStart(boolean isFullAuthentication) {
+        Button button;
+        if(isFullAuthentication){
+            button = (Button) vaguard_listen_btn_B;
+//            vaguard_listen_btn_A.setEnabled(false);
+            MODE = "B";
+        }else{
+            button = (Button) vaguard_listen_btn_A;
+//            vaguard_listen_btn_B.setEnabled(false);
+            MODE = "A";
+        }
+        if (!button.getText().equals(getString(R.string.vaguard_stop))) {
+            // Ready to runProgress
+            if (androidSpeechRecognizerManager != null &&
+                    !androidSpeechRecognizerManager.ismIsListening()) {
+                androidSpeechRecognizerManager.destroy();
+            }
+            runProgress(State.TRIGGER);
+//            button.setText(getString(R.string.vaguard_stop));
+            vaguard_listen_btn_A.setText(getString(R.string.vaguard_stop));
+            vaguard_listen_btn_B.setText(getString(R.string.vaguard_stop));
+        } else {
+            // Ready to stop
+            runProgress(State.STOP);
+            if (androidSpeechRecognizerManager != null) {
+                androidSpeechRecognizerManager.destroy();
+                androidSpeechRecognizerManager = null;
+            }
         }
     }
 
@@ -131,32 +150,44 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 }
                 guide_line.setText("");
                 result_tv.setText("Process stopped");
+                setupStartBtn();
                 break;
             case FINISH:
                 Log.d(TAG, "FINISH state");
-                vaguard_listen_btn.setText(getString(R.string.vaguard_start));
-                guide_line.setText("Succeeded Authentication!");
-                result_tv.setText("Transfer money...");
+                setupStartBtn();
+                guide_line.setText("Success!");
+                result_tv.setText("Money is transferred.");
                 break;
             case REJECT_SPEAKER:
                 Log.d(TAG, "REJECT_SPEAKER state");
-                vaguard_listen_btn.setText(getString(R.string.vaguard_start));
+                setupStartBtn();
                 guide_line.setText("Failed Speaker Verification!");
                 result_tv.setText("You are not "+ azureVoiceRecognizerManager.getSpeakerName(speakerId) + "\n");
                 break;
             case REJECT_RESPONSE:
                 Log.d(TAG, "REJECT_RESPONSE state");
-                vaguard_listen_btn.setText(getString(R.string.vaguard_start));
+                setupStartBtn();
                 guide_line.setText("Failed challenge Authentication!");
                 result_tv.setText("Response is not the same with challenge\n");
                 break;
             case USER_NOT_EXIST:
                 Log.d(TAG, "USER_NOT_EXIST state");
-                vaguard_listen_btn.setText(getString(R.string.vaguard_start));
+                setupStartBtn();
                 guide_line.setText("Failed Identified!");
                 result_tv.setText("Cannot find corresponding speaker, please add your voiceprint first.\n");
                 break;
         }
+    }
+
+    private void setupStartBtn() {
+//        if(MODE.equals("A")){
+//            vaguard_listen_btn_A.setEnabled(true);
+//        }else{
+//            vaguard_listen_btn_B.setEnabled(true);
+//        }
+
+        vaguard_listen_btn_A.setText(getString(R.string.vaguard_start)+" A");
+        vaguard_listen_btn_B.setText(getString(R.string.vaguard_start)+" B");
     }
 
     private void androidSpeechRecognize() {
@@ -253,7 +284,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         Log.d(TAG, "after identifyTask get status: "+identifySpeakerTask.getStatus());
                         if(result != null && result.getString("status").equals("success")){
                             speakerId = result.getString("data");
-                            runProgress(State.CHALLENGE);
+
+                            if(MODE.equals("A")){
+                                runProgress(State.FINISH);
+                            }else{
+                                runProgress(State.CHALLENGE);
+                            }
                         } else{
                             speakerId = null;
                             runProgress(State.USER_NOT_EXIST);

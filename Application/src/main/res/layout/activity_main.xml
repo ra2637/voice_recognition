@@ -50,14 +50,31 @@
         android:layout_centerInParent="true"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="44dp"
-        android:text="@string/vaguard_start"
+        android:layout_marginTop="48dp"
+        android:text="START A"
         android:textColor="#1a4067"
         android:textStyle="italic"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.036"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/result_tv" />
+
+    <Button
+        android:id="@+id/vaguard_listen_btn2"
+        android:layout_width="150dp"
+        android:layout_height="80dp"
+        android:layout_centerInParent="true"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="48dp"
+        android:text="START B"
+        android:textColor="#1a4067"
+        android:textStyle="italic"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/vaguard_listen_btn"
         app:layout_constraintTop_toBottomOf="@+id/result_tv" />
 
     <Button
@@ -67,7 +84,7 @@
         android:layout_centerInParent="true"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:text="@string/add_user"
         android:textColor="#1a4067"
         android:textStyle="italic"
@@ -75,5 +92,5 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/vaguard_listen_btn" />
+        app:layout_constraintTop_toBottomOf="@+id/vaguard_listen_btn2" />
 </android.support.constraint.ConstraintLayout>
