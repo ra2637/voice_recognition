@@ -139,7 +139,7 @@ public abstract class AbstractVoiceRecognizerManager {
         private Activity activity;
         private Button record_btn;
         private EditText user_name;
-        private TextView guide_line;
+        private TextView guide_line, recording_line;
         private ProgressBar progressBar;
 
         public AddSpeaker(Activity activity){
@@ -147,11 +147,13 @@ public abstract class AbstractVoiceRecognizerManager {
             this.record_btn = activity.findViewById(R.id.record_btn);
             this.user_name = activity.findViewById(R.id.user_name);
             this.guide_line = activity.findViewById(R.id.add_user_guide_line);
+            this.recording_line = activity.findViewById(R.id.recording_line);
             this.progressBar = activity.findViewById(R.id.progress_loader);
         }
 
         @Override
         protected void onPreExecute(){
+            recording_line.setVisibility(View.GONE);
             progressBar.setVisibility(View.VISIBLE);
             record_btn.setEnabled(false);
         }

@@ -18,7 +18,7 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
     private static final String TAG = "AddUserActivity";
     private Button record_btn;
     private EditText user_name;
-    private TextView error_line, guide_line;
+    private TextView error_line, guide_line, recording_line;
     private ProgressBar spinner;
     private AlizeVoiceRecognizerManager alizeVoiceRecognizerManager;
     private AzureVoiceRecognizerManager2 azureVoiceRecognizerManager;
@@ -43,10 +43,11 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
         user_name.setText("");
         error_line = (TextView) findViewById(R.id.add_user_error_line);
         guide_line = (TextView) findViewById(R.id.add_user_guide_line);
+        recording_line = (TextView) findViewById(R.id.recording_line);
         spinner = (ProgressBar) findViewById(R.id.progress_loader);
-        spinner.setVisibility(View.GONE);
 
-//        guide_line.setText("Please response \n\n\" 5 6 2 1 3 8 7 4 0 9 \"\n\n and press stop after you finished.");
+        spinner.setVisibility(View.GONE);
+        recording_line.setVisibility(View.GONE);
     }
 
     private void setClickListeners() {
@@ -81,6 +82,8 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
                         audioRecorderManager.setOutputFileName(outputFile);
                     }
 
+                    guide_line.setText("Please response \n\n\" 5 6 2 1 3 8 7 4 0 9 \"\n\n and press stop after you finished.");
+                    recording_line.setVisibility(View.VISIBLE);
                     audioRecorderManager.startRecording();
                     record_btn.setText(getString(R.string.stop_recording));
                     error_line.setText("");
