@@ -9,11 +9,6 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import org.json.JSONObject;
-
-import java.util.concurrent.ExecutionException;
-
-
 public class AddUserActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "AddUserActivity";
     private Button record_btn;
@@ -93,9 +88,7 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
 
                     String wavOutputFile = azureVoiceRecognizerManager.getSpeakersAudioFolder()+"/"+speakerName+".wav";
                     audioRecorderManager.createWavFile(outputFile, wavOutputFile);
-
-                    AbstractVoiceRecognizerManager.AddSpeaker addSpeakerTask = azureVoiceRecognizerManager.new AddSpeaker(this);
-                    addSpeakerTask.execute(speakerName, wavOutputFile);
+                    azureVoiceRecognizerManager.new AddSpeaker(this).execute(speakerName, wavOutputFile);
                 }
                 break;
         }
