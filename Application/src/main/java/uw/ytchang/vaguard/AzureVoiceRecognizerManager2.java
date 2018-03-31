@@ -80,6 +80,7 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
             JSONObject result = new JSONObject();
             try {
                 result.put("status", "success");
+                result.put("speaker", speakerName);
                 return result;
             } catch (JSONException e) {
                 Log.d(TAG, e.getMessage());

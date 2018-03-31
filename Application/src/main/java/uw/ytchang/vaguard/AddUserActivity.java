@@ -46,7 +46,7 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
         spinner = (ProgressBar) findViewById(R.id.progress_loader);
         spinner.setVisibility(View.GONE);
 
-        guide_line.setText("Please response \n\n\" 5 6 2 1 3 8 7 4 0 9 \"\n\n and press stop after you finished.");
+//        guide_line.setText("Please response \n\n\" 5 6 2 1 3 8 7 4 0 9 \"\n\n and press stop after you finished.");
     }
 
     private void setClickListeners() {
@@ -86,30 +86,13 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
                     error_line.setText("");
                 }else{
                     // TODO: stop recording process and create user in alize
-                    spinner.setVisibility(View.VISIBLE);
-                    record_btn.setEnabled(false);
                     audioRecorderManager.stopRecording();
 
                     String wavOutputFile = azureVoiceRecognizerManager.getSpeakersAudioFolder()+"/"+speakerName+".wav";
                     audioRecorderManager.createWavFile(outputFile, wavOutputFile);
 
-                    AbstractVoiceRecognizerManager.AddSpeaker addSpeakerTask = azureVoiceRecognizerManager.new AddSpeaker();
+                    AbstractVoiceRecognizerManager.AddSpeaker addSpeakerTask = azureVoiceRecognizerManager.new AddSpeaker(this);
                     addSpeakerTask.execute(speakerName, wavOutputFile);
-
-                    try {
-                        JSONObject result = addSpeakerTask.get();
-                        if(result != null){
-                            user_name.setFreezesText(false);
-                            user_name.setText("");
-                            guide_line.setText("Added user "+ speakerName + " to the system.");
-                            record_btn.setText(getString(R.string.start_recording));
-                            record_btn.setEnabled(true);
-                            spinner.setVisibility(View.GONE);
-                        }
-                    } catch (InterruptedException|ExecutionException e) {
-                        e.printStackTrace();
-                        error_line.setText("Internal error.");
-                    }
                 }
                 break;
         }

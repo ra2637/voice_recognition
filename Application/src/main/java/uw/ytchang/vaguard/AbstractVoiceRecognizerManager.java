@@ -1,9 +1,16 @@
 package uw.ytchang.vaguard;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -129,6 +136,25 @@ public abstract class AbstractVoiceRecognizerManager {
 
 
     public class AddSpeaker extends AsyncTask<String, Void, JSONObject> {
+        private Activity activity;
+        private Button record_btn;
+        private EditText user_name;
+        private TextView guide_line;
+        private ProgressBar progressBar;
+
+        public AddSpeaker(Activity activity){
+            this.activity = activity;
+            this.record_btn = activity.findViewById(R.id.record_btn);
+            this.user_name = activity.findViewById(R.id.user_name);
+            this.guide_line = activity.findViewById(R.id.add_user_guide_line);
+            this.progressBar = activity.findViewById(R.id.progress_loader);
+        }
+
+        @Override
+        protected void onPreExecute(){
+            progressBar.setVisibility(View.VISIBLE);
+            record_btn.setEnabled(false);
+        }
         @Override
         protected JSONObject doInBackground(String... strings) {
             if(strings.length != 2) {
@@ -140,6 +166,20 @@ public abstract class AbstractVoiceRecognizerManager {
         @Override
         protected void onPostExecute(JSONObject result) {
             Log.d(TAG, "RESULT = " + result);
+            user_name.setFreezesText(false);
+            user_name.setText("");
+            record_btn.setText(activity.getString(R.string.start_recording));
+            record_btn.setEnabled(true);
+            progressBar.setVisibility(View.GONE);
+            try {
+                if(result != null){
+                    guide_line.setText("Success to add user "+ result.getString("speaker") + " to the system.");
+                }else{
+                    guide_line.setText("Fail to add user "+ result.getString("speaker") + " to the system.");
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 
