@@ -262,7 +262,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             if(audioRecorderManager.isFileClosed()){
                 if(state.equals(State.COMMAND)) {
                     String wavOutputFile = getBaseContext().getFilesDir().getPath()+"/test.wav";
-                    audioRecorderManager.createWavFile(audioRecorderManager.getOutputFileName(), wavOutputFile);
+                    audioRecorderManager.createWavFile(audioRecorderManager.getOutputFileName(), wavOutputFile, false);
                     AbstractVoiceRecognizerManager.IdentifySpeaker identifySpeakerTask = azureVoiceRecognizerManager.new IdentifySpeaker();
                     identifySpeakerTask.execute(wavOutputFile);
                     try {
@@ -290,7 +290,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     }
                 }else if(state.equals(State.CHALLENGE)){
                     String wavOutputFile = getBaseContext().getFilesDir().getPath()+"/test.wav";
-                    audioRecorderManager.createWavFile(audioRecorderManager.getOutputFileName(), wavOutputFile);
+                    audioRecorderManager.createWavFile(audioRecorderManager.getOutputFileName(), wavOutputFile, false);
                     AbstractVoiceRecognizerManager.VerifySpeaker verifySpeakerTask = azureVoiceRecognizerManager.new VerifySpeaker();
                     verifySpeakerTask.execute(speakerId, wavOutputFile);
                     try {

@@ -127,7 +127,7 @@ public class AudioRecorderManager {
         return fileClosed;
     }
 
-    public void createWavFile(String inFilename, String outFilename){
+    public void createWavFile(String inFilename, String outFilename, boolean deleteInFile){
         FileInputStream in = null;
         FileOutputStream out = null;
         long totalAudioLen = 0;
@@ -153,8 +153,11 @@ public class AudioRecorderManager {
 
             in.close();
             out.close();
-            File deleteFile = new File(inFilename);
-            deleteFile.delete();
+            if(deleteInFile){
+                File deleteFile = new File(inFilename);
+                deleteFile.delete();
+            }
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

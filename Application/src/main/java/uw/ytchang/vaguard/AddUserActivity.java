@@ -81,7 +81,7 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
                     audioRecorderManager.stopRecording();
 
                     String wavOutputFile = azureVoiceRecognizerManager.getSpeakersAudioFolder()+"/"+speakerName+".wav";
-                    audioRecorderManager.createWavFile(outputFile, wavOutputFile);
+                    audioRecorderManager.createWavFile(outputFile, wavOutputFile, true);
                     azureVoiceRecognizerManager.new AddSpeaker(this).execute(speakerName, wavOutputFile);
                 }
                 break;
