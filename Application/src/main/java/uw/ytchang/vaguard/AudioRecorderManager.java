@@ -153,6 +153,8 @@ public class AudioRecorderManager {
 
             in.close();
             out.close();
+            File deleteFile = new File(inFilename);
+            deleteFile.delete();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

@@ -15,7 +15,6 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
     private EditText user_name;
     private TextView error_line, guide_line, recording_line;
     private ProgressBar spinner;
-    private AlizeVoiceRecognizerManager alizeVoiceRecognizerManager;
     private AzureVoiceRecognizerManager2 azureVoiceRecognizerManager;
     private AudioRecorderManager audioRecorderManager;
 
@@ -27,7 +26,6 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
         findViews();
         setClickListeners();
 
-        alizeVoiceRecognizerManager = new AlizeVoiceRecognizerManager(getBaseContext());
         azureVoiceRecognizerManager = new AzureVoiceRecognizerManager2(getBaseContext());
     }
 
@@ -54,18 +52,14 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
         switch (v.getId()) {
             case R.id.record_btn:
                 String speakerName = user_name.getText().toString();
-                String outputFile = alizeVoiceRecognizerManager.getSpeakersAudioFolder()+"/"+user_name.getText()+".pcm";;
+                String outputFile = azureVoiceRecognizerManager.getSpeakersAudioFolder()+"/"+speakerName+".wav.tmp";
+
                 if(record_btn.getText().equals(getString(R.string.start_recording))){
                     // Check if username is valid
                     user_name.setFreezesText(true);
                     if(!speakerName.matches("\\w+")){
                         Log.d(TAG, "Name can only contains A-Z, a-z and digits.");
                         error_line.setText("Name can only contains A-Z, a-z and digits.");
-                        user_name.setFreezesText(false);
-                        return;
-                    }
-                    if(alizeVoiceRecognizerManager.hasSpeaker(speakerName)){
-                        error_line.setText(speakerName+ " is existed.");
                         user_name.setFreezesText(false);
                         return;
                     }
@@ -83,7 +77,7 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
                     record_btn.setText(getString(R.string.stop_recording));
                     error_line.setText("");
                 }else{
-                    // TODO: stop recording process and create user in alize
+                    // TODO: stop recording process and create user
                     audioRecorderManager.stopRecording();
 
                     String wavOutputFile = azureVoiceRecognizerManager.getSpeakersAudioFolder()+"/"+speakerName+".wav";

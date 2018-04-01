@@ -31,7 +31,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private TextView guide_line, result_tv;
     private Button vaguard_listen_btn_A, vaguard_listen_btn_B, add_user_btn;
     private AndroidSpeechRecognizerManager androidSpeechRecognizerManager;
-    private AlizeVoiceRecognizerManager alizeVoiceRecognizerManager;
     private AzureVoiceRecognizerManager2 azureVoiceRecognizerManager;
     private static AudioRecorderManager audioRecorderManager;
 //    private String recordVoicePath,
@@ -46,8 +45,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_main);
         findViews();
         setClickListeners();
-
-        alizeVoiceRecognizerManager = new AlizeVoiceRecognizerManager(getBaseContext());
+        azureVoiceRecognizerManager = new AzureVoiceRecognizerManager2(getBaseContext());
 
     }
 
@@ -182,12 +180,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     private void setupStartBtn() {
-//        if(MODE.equals("A")){
-//            vaguard_listen_btn_A.setEnabled(true);
-//        }else{
-//            vaguard_listen_btn_B.setEnabled(true);
-//        }
-
         vaguard_listen_btn_A.setText(getString(R.string.vaguard_start)+" A");
         vaguard_listen_btn_B.setText(getString(R.string.vaguard_start)+" B");
     }
@@ -269,13 +261,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
             Log.d(TAG, "file is closed: "+ audioRecorderManager.isFileClosed() );
             if(audioRecorderManager.isFileClosed()){
                 if(state.equals(State.COMMAND)) {
-//                    if((speakerId = alizeVoiceRecognizerManager.identifySpeaker(audioRecorderManager.getOutputFileName())) != null){
-//                        runProgress(State.CHALLENGE);
-//                    }else{
-//                        speakerId = null;
-//                        runProgress(State.USER_NOT_EXIST);
-//                    }
-
                     String wavOutputFile = getBaseContext().getFilesDir().getPath()+"/test.wav";
                     audioRecorderManager.createWavFile(audioRecorderManager.getOutputFileName(), wavOutputFile);
                     AbstractVoiceRecognizerManager.IdentifySpeaker identifySpeakerTask = azureVoiceRecognizerManager.new IdentifySpeaker();
@@ -304,13 +289,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         e.printStackTrace();
                     }
                 }else if(state.equals(State.CHALLENGE)){
-//                    if(alizeVoiceRecognizerManager.verifySpeaker(speakerId, audioRecorderManager.getOutputFileName())){
-//                        checkContent(challenge);
-//                    }else{
-//                        Log.d(TAG, "voiceprint is not match: "+speakerId);
-//                        runProgress(State.REJECT_SPEAKER);
-//                    }
-
                     String wavOutputFile = getBaseContext().getFilesDir().getPath()+"/test.wav";
                     audioRecorderManager.createWavFile(audioRecorderManager.getOutputFileName(), wavOutputFile);
                     AbstractVoiceRecognizerManager.VerifySpeaker verifySpeakerTask = azureVoiceRecognizerManager.new VerifySpeaker();
