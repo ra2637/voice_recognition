@@ -17,6 +17,7 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
     private ProgressBar spinner;
     private AzureVoiceRecognizerManager2 azureVoiceRecognizerManager;
     private AudioRecorderManager audioRecorderManager;
+    private LogManager myLog;
 
 
     @Override
@@ -26,7 +27,9 @@ public class AddUserActivity extends AppCompatActivity implements View.OnClickLi
         findViews();
         setClickListeners();
 
-        azureVoiceRecognizerManager = new AzureVoiceRecognizerManager2(getBaseContext());
+        myLog = new LogManager(getBaseContext());
+        azureVoiceRecognizerManager = new AzureVoiceRecognizerManager2(getBaseContext(), myLog);
+
     }
 
     private void findViews() {

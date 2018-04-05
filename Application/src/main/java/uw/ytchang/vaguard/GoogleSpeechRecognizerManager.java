@@ -29,8 +29,9 @@ public class GoogleSpeechRecognizerManager {
     private StreamingRecognizeClient mStreamingClient;
 //    private SyncRecognizeClient mSyncClient;
     private ManagedChannel channel;
+    private LogManager myLog;
 
-    public GoogleSpeechRecognizerManager(final Context context){
+    public GoogleSpeechRecognizerManager(final Context context, LogManager myLog){
         // Required to support Android 4.x.x (patches for OpenSSL from Google-Play-Services)
         try {
             ProviderInstaller.installIfNeeded(context);
@@ -60,6 +61,8 @@ public class GoogleSpeechRecognizerManager {
         } catch (Exception e) {
             Log.e(GoogleSpeechRecognizerManager.class.getSimpleName(), "Error", e);
         }
+
+        this.myLog = myLog;
     }
 
     public boolean recognizeFile(String audioFilePath, String challenge){
@@ -98,7 +101,7 @@ public class GoogleSpeechRecognizerManager {
                 }
             }
         }
-
+        myLog.setResult(String.valueOf(match));
         return match;
     }
 

@@ -32,18 +32,18 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
     private final String TAG = this.getClass().getSimpleName();
     private static final String AZURE_CREDENTIAL_FILE = "azure_credentials";
     private final String AZURE_API_URI = "https://westus.api.cognitive.microsoft.com/spid/v1.0";
-    private static String speakerBaseFolder = "azure";
+    private static final String speakerBaseFolder = "azure";
 
 //    private CloseableHttpClient httpClient;
     private String credentialString;
-
-    public AzureVoiceRecognizerManager2(Context context) {
-        super(context, speakerBaseFolder);
+    private LogManager myLog;
+    public AzureVoiceRecognizerManager2(Context context, LogManager myLog) {
+        super(context, speakerBaseFolder, myLog);
         if(!initVoiceRecognizer()){
             Log.e(TAG, "Cannot init voice recognize");
             return;
         }
-
+        this.myLog = myLog;
     }
 
     @Override
@@ -77,10 +77,12 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
         }
 
         if(enrollSpeakerInAzure(profileId, audioPath) && this.saveIdName(profileId, speakerName)){
+            myLog.createUserFile(speakerName, profileId);
             JSONObject result = new JSONObject();
             try {
                 result.put("status", "success");
                 result.put("speaker", speakerName);
+                result.put("id", profileId);
                 return result;
             } catch (JSONException e) {
                 Log.d(TAG, e.getMessage());
@@ -206,16 +208,14 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
 
         try {
             if(response == null){
+                myLog.setVerification("null");
                 return null;
             }
-
-//            if(!response.get("data").equals(speakerId)){
-//                return null;
-//            }
 
             result = new JSONObject();
             result.put("status", "success");
             result.put("data", true);
+            myLog.setVerification(speakerId);
         } catch (JSONException e) {
             Log.d(TAG, e.getMessage());
         }
@@ -226,7 +226,18 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
     public JSONObject identifySpeaker(String audioPath){
         Set<String> speakerIdSet = this.getSpekaerIds();
         String identificationProfileIds = speakerIdSet.stream().collect(Collectors.joining(","));
-        return azureIdentify(identificationProfileIds, audioPath);
+        JSONObject response = azureIdentify(identificationProfileIds, audioPath);
+        try{
+            if(response == null){
+                myLog.setIdentification("null");
+            }else{
+                myLog.setIdentification(response.getString("data"));
+            }
+
+        }catch (JSONException e){
+            Log.d(TAG, e.getMessage());
+        }
+        return response;
     }
 
     public JSONObject azureIdentify(String identificationProfileIds, String audioPath){

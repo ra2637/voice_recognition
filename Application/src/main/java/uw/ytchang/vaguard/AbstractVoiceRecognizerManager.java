@@ -35,8 +35,9 @@ public abstract class AbstractVoiceRecognizerManager {
 
     protected Context context;
     private HashMap<String, String> id_name_map;
+    private LogManager myLog;
 
-    public AbstractVoiceRecognizerManager(Context context, String speakerBaseFolder){
+    public AbstractVoiceRecognizerManager(Context context, String speakerBaseFolder, LogManager myLog){
         Log.d(TAG, "init voice recognizer");
 
         this.context = context;
@@ -65,6 +66,7 @@ public abstract class AbstractVoiceRecognizerManager {
             Log.d(TAG, e.getStackTrace().toString());
         }
 
+        this.myLog = myLog;
         Log.d(TAG, "finish init voice recognizer");
     }
 
@@ -175,7 +177,9 @@ public abstract class AbstractVoiceRecognizerManager {
             progressBar.setVisibility(View.GONE);
             try {
                 if(result != null){
-                    guide_line.setText("Success to add user "+ result.getString("speaker") + " to the system.");
+                    String speakerName = result.getString("speaker");
+                    String id  = result.getString("id");
+                    guide_line.setText("Success to add user "+ speakerName + " to the system.");
                 }else{
                     guide_line.setText("Fail to add user "+ result.getString("speaker") + " to the system.");
                 }

@@ -38,6 +38,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private final int RECORD_TIME =  5*1000;
 
     private TextToSpeech ttobj;
+    private LogManager myLog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,14 +46,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_main);
         findViews();
         setClickListeners();
-        azureVoiceRecognizerManager = new AzureVoiceRecognizerManager2(getBaseContext());
-
+        azureVoiceRecognizerManager = new AzureVoiceRecognizerManager2(getBaseContext(), myLog);
+        myLog = new LogManager(getBaseContext());
     }
 
     @Override
     protected void onResume(){
         super.onResume();
-        azureVoiceRecognizerManager = new AzureVoiceRecognizerManager2(getBaseContext());
+        myLog = new LogManager(getBaseContext());
+        azureVoiceRecognizerManager = new AzureVoiceRecognizerManager2(getBaseContext(), myLog);
+
     }
 
     private void findViews() {
@@ -97,12 +100,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private void trigerStart(boolean isFullAuthentication) {
         Button button;
+        if(!myLog.checkUserFile()){
+            Log.d(TAG, "log manager check user file failed!");
+        }
+        myLog.setDate();
         if(isFullAuthentication){
             button = (Button) vaguard_listen_btn_B;
             MODE = "B";
+            myLog.setMode(2);
         }else{
             button = (Button) vaguard_listen_btn_A;
             MODE = "A";
+            myLog.setMode(1);
         }
         if (!button.getText().equals(getString(R.string.vaguard_stop))) {
             // Ready to runProgress
@@ -154,24 +163,28 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
             case FINISH:
                 Log.d(TAG, "FINISH state");
+                myLog.write();
                 setupStartBtn();
                 guide_line.setText("Success!");
                 result_tv.setText("Money is transferred.");
                 break;
             case REJECT_SPEAKER:
                 Log.d(TAG, "REJECT_SPEAKER state");
+                myLog.write();
                 setupStartBtn();
                 guide_line.setText("Failed Speaker Verification!");
                 result_tv.setText("You are not "+ azureVoiceRecognizerManager.getSpeakerName(speakerId) + "\n");
                 break;
             case REJECT_RESPONSE:
                 Log.d(TAG, "REJECT_RESPONSE state");
+                myLog.write();
                 setupStartBtn();
                 guide_line.setText("Failed challenge Authentication!");
                 result_tv.setText("Response is not the same with challenge\n");
                 break;
             case USER_NOT_EXIST:
                 Log.d(TAG, "USER_NOT_EXIST state");
+                myLog.write();
                 setupStartBtn();
                 guide_line.setText("Failed Identified!");
                 result_tv.setText("Cannot find corresponding speaker, please add your voiceprint first.\n");
@@ -271,7 +284,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         Log.d(TAG, "after identifyTask get status: "+identifySpeakerTask.getStatus());
                         if(result != null && result.getString("status").equals("success")){
                             speakerId = result.getString("data");
-
                             if(MODE.equals("A")){
                                 runProgress(State.FINISH);
                             }else{
@@ -368,7 +380,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private void checkContent(String challenge){
         Log.d(TAG, "checkContent");
-        GoogleSpeechRecognizerManager googleSpeechRecognizerManager = new GoogleSpeechRecognizerManager(getApplicationContext());
+        GoogleSpeechRecognizerManager googleSpeechRecognizerManager = new GoogleSpeechRecognizerManager(getApplicationContext(), myLog);
         if(googleSpeechRecognizerManager.recognizeFile(audioRecorderManager.getOutputFileName(), challenge)){
             runProgress(State.FINISH);
         }else{
