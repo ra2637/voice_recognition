@@ -4,3 +4,4 @@ Application/build
 .idea/
 Application/src/main/assets/credentials.json
 Application/src/main/assets/azure_credentials
+*/.DS_Store
