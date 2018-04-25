@@ -33,7 +33,6 @@ public class AlizeVoiceRecognizerManager {
 
     private String speakerBaseFolder = "alize/speakers";
     private static String speakersAudioFolder;
-//    private static ArrayList<String> speakers;
 
 
     public AlizeVoiceRecognizerManager(Context context) {
@@ -177,30 +176,6 @@ public class AlizeVoiceRecognizerManager {
         }
         return false;
     }
-
-//    private ByteArrayOutputStream trimAudioSilence(String audioFilePath){
-//        try{
-//            File file = new File(audioFilePath);
-//            FileInputStream inputStream = new FileInputStream(file);
-//            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//
-//            while(true){
-//                int b = inputStream.read();
-//                if(b>0){
-//                    outputStream.write(b);
-//                }else if(b == -1){
-//                    break;
-//                }
-//            }
-//            inputStream.close();
-//            outputStream.close();
-//            return outputStream;
-//        }catch (IOException e){
-//            e.printStackTrace();
-//        }
-//
-//        return null;
-//    }
 
     public String getSpeakersAudioFolder(){
         return speakersAudioFolder;

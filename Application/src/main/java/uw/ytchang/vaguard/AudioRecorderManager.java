@@ -20,7 +20,6 @@ public class AudioRecorderManager {
     private static final String TAG = "AudioRecorderManager";
 
     public static final int RECORDER_SAMPLERATE = 16000;
-//    public static final int RECORDER_SAMPLERATE = 8000;
     private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
     private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
     private static final int RECORDER_BPP = 16;
@@ -31,7 +30,6 @@ public class AudioRecorderManager {
     private AudioRecord mAudioRecord = null;
     private Thread mRecordingThread = null;
     private boolean mIsRecording = false;
-//    private StreamingRecognizeClient mStreamingClient;
 
     private boolean hasVoice;
     private boolean fileClosed;

@@ -308,11 +308,5 @@ public class AzureVoiceRecognizerManager2 extends AbstractVoiceRecognizerManager
         return null;
     }
 
-//    @Override
-//    protected void onPostExecute(JSONObject result)
-//    {
-//        Log.d(TAG, "RESULT = " + result);
-//
-//    }
 
 }

@@ -96,10 +96,6 @@ public class LogManager {
                 return false;
             }
 
-//            if(mode == 2 && (verification == null || result == null)){
-//                return false;
-//            }
-
             String row;
             if(mode == 1){
                 row = date+","+id+","+identification;

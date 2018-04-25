@@ -27,7 +27,6 @@ public class GoogleSpeechRecognizerManager {
     private static final String HOSTNAME = "speech.googleapis.com";
     private static final int PORT = 443;
     private StreamingRecognizeClient mStreamingClient;
-//    private SyncRecognizeClient mSyncClient;
     private ManagedChannel channel;
     private LogManager myLog;
 

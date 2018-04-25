@@ -174,6 +174,6 @@ public class AndroidSpeechRecognizerManager {
 
 
     public interface onResultsReady {
-        public void onResults(ArrayList<String> results);
+        void onResults(ArrayList<String> results);
     }
 }

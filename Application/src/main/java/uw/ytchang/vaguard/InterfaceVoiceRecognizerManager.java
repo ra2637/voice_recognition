@@ -18,12 +18,4 @@ public interface InterfaceVoiceRecognizerManager {
 
     public JSONObject deleteSpeaker(String speakerId);
 
-//    public boolean addSpeaker();
-//
-//    public String verifySpeaker();
-//
-//    public String getSpeakerId();
-//
-//    public boolean deleteSpeaker();
-
 }
