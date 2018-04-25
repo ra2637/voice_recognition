@@ -1,16 +1,25 @@
-VoiceCamera Recognition
+Voice authentication for Voice assistants
 ===================================
-
-This project is based on Android VoiceCamera Sample: https://github.com/googlesamples/io2015-codelabs/tree/master/voice-interaction-api/voice-interaction-start and alize speaker recogonition platform: https://github.com/ALIZE-Speaker-Recognition
 
 Introduction
 ------------
+This project is an implementation of two protections for voice assistatns.
+The application simulates the process of using voice assistants and adds the two protections into the process.
+The two simulated process are:
+
+A: only identify the speaker.
+B: includes speak identification and challenge-response to verify the speaker.
+
+Before using the system, the user must enroll in the speaker recognition system used in the application.
+The application utilizes the existing speaker recognition (MS azure speaker recognition system) to
+extract user's voice features and compares the voiceprint with enrolled ones.
 
 Pre-requisites
 --------------
-
-- Android SDK v24
+- Android SDK v26
 - Android Build Tools v26.0.2
+- [MS azure speaker recognition system](https://azure.microsoft.com/en-us/services/cognitive-services/speaker-recognition/ "azure"): save it in assets/azure_credentials
+- [Google cloud speech-to-text](https://cloud.google.com/speech-to-text/): save it in assets/credentials.json
 
 
 Getting Started
@@ -22,19 +31,3 @@ This sample uses the Gradle build system. To build this project, use the
 License
 -------
 
-Copyright 2014 The Android Open Source Project, Inc.
-
-Licensed to the Apache Software Foundation (ASF) under one or more contributor
-license agreements.  See the NOTICE file distributed with this work for
-additional information regarding copyright ownership.  The ASF licenses this
-file to you under the Apache License, Version 2.0 (the "License"); you may not
-use this file except in compliance with the License.  You may obtain a copy of
-the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
-License for the specific language governing permissions and limitations under
-the License.
