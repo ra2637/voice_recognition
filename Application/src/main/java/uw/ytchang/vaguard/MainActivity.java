@@ -142,7 +142,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
             case COMMAND:
                 Log.d(TAG, "COMMAND state");
-                guide_line.setText("Say \"Transfer money to Yuntai\"");
+                guide_line.setText("Say \"Transfer money to Mary.\"");
                 recordVoice(State.COMMAND, null);
                 break;
             case CHALLENGE:
